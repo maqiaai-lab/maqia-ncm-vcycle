@@ -30,6 +30,7 @@ ap.add_argument("--size", default="medium")
 ap.add_argument("--variants", default="baseline,vcycle|m=6,no-restrict|m=6,vcycle|m=8,no-restrict|m=8")
 ap.add_argument("--ref", default="openai-community/gpt2-large")
 ap.add_argument("--boot", type=int, default=50)
+ap.add_argument("--features_only", action="store_true", help="compute and cache the features (GPU), then stop")
 a = ap.parse_args()
 variants = [v for v in a.variants.split(",") if v]
 feat_path = os.path.join(RESULTS, "cache", f"lm1b_mauve_feats_{a.size}.pt")
@@ -72,6 +73,10 @@ else:
     torch.save(F_, feat_path)
     del ref
     torch.cuda.empty_cache()
+
+if a.features_only:
+    print(f"features cached in {feat_path}", flush=True)
+    sys.exit(0)
 
 import mauve  # noqa: E402
 

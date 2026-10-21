@@ -1,0 +1,21 @@
+{
+  "task": "lm1b",
+  "size": "medium",
+  "a": "vcycle|m=6",
+  "b": "baseline",
+  "judge": "Qwen/Qwen2.5-7B-Instruct",
+  "items": 5120,
+  "mean_preference_for_a": [
+    0.6326577595908611,
+    0.6261749659952287,
+    0.6393125930585329
+  ],
+  "share_preferring_a": [
+    0.7578125,
+    0.74609375,
+    0.769921875
+  ],
+  "order_agreement": 0.37109375,
+  "letter_a_share": 0.2644985108644187,
+  "seconds": 944.9229087960002
+}

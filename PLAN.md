@@ -329,3 +329,104 @@ All numbers are in `results/SUMMARY.md` and the README.
 - **Null result:** on text the V-cycle helps nearly every sample, so a gate cannot concentrate the gain. The residual remains a useful detector (AUROC 0.64–0.74) but not a useful compute gate.
 
 **Step 5 groundwork.** OWT has no released checkpoint (`ncm-checkpoints` holds only `owt/TODO.md`). TinyStories is released. `LevelDecoder` now supports `query_level0: false` (offsets from level 1; heads, RoPE and post-upsample convs indexed k − 1, as in `generate()`). `load()` points BPE tokenizers at their files. The text helpers follow the config's `eval.metric` (`genppl` for TinyStories: cut at the first EOS, whole text scored). The BPE pickles were checked with `pickletools`: dicts of int → bytes and lists of byte tuples, no import or call opcodes. On LM1B paths the new code is identical to the old (checked on random logits and ids).
+
+### 2026-10-21 (phase A: conditional tasks on the laptop, tooling for a rented GPU)
+
+**Code.**
+- `vcycle/cond.py` and `experiments/cond_vcycle.py`: XSum and WMT14, sampled exactly as `scripts/eval_shard.py` and scored as `scripts/eval_merge.py` (ROUGE-1/2/L plus GPT-2 gen. PPL; sacreBLEU, lowercased BLEU, chrF, length ratio). Paired bootstraps over documents; BLEU's is exact, from per-sentence sufficient statistics (`bleu_from_stats` reproduces sacreBLEU's corpus score).
+- `LevelDecoder`:
+  - `predict_level0` (WMT14 reads level 0 off the prompt's last non-pad positions);
+  - an opt-in pad-aware prompt cache (`cache_padded=True`). It is off by default, so the LM1B and TinyStories paths are unchanged.
+- **Checks.** Both decoders, cached and uncached, match `generate()` code for code: XSum 32/32 and WMT14 64/64 documents on the GPU.
+- Token picking moved to a shared `pick_tokens` function, identical to the 78ff268 code under LM1B and XSum settings (random-input test).
+- **The released conditional configs decode greedily** (`top_k: 1`). Without re-encoding, the same regeneration therefore reproduces the single pass exactly (checked: 100% of documents at every level), so the single pass is the equal-compute control.
+- **Surprise: the restriction must re-encode the output in canonical form.** After the first EOS, the picked ids are decoder noise (XSum: only 39% of the tail is EOS, because the frequency and adjacency penalties push the picker off repeated EOS). Round trip on 48 outputs per task, share of texts reproduced exactly:
+
+  | Form | XSum | WMT14 |
+  |---|---|---|
+  | Raw ids | 79% | 40% |
+  | Text + EOS + PAD (the released tokenizer pads with PAD) | 79% | 92% |
+  | Text + EOS repeated | 81% | 21% |
+  | Text + PAD | 71% | 77% |
+
+  `Conditional.canonical` re-encodes text + EOS + PAD; `--raw_restrict` keeps the raw form as an ablation.
+
+**WMT14 German → English, all 3,003 sentences** (laptop GPU, greedy as released). Single pass: BLEU 21.73, lowercased 22.62, chrF 49.59, length ratio 0.938.
+
+| Restart level (extra NFE per cycle) | Δ BLEU after 1 / 2 / 3 cycles [95% CI] | Sentences fixed after cycle 2 / 3 |
+|---|---|---|
+| m = 3 (+8) | +0.32 [+0.05, +0.59] / +0.49 [+0.21, +0.77] / +0.55 [+0.25, +0.83] | 18% / 33% |
+| m = 5 (+6) | +0.29 [+0.10, +0.50] / +0.23 [+0.02, +0.45] / +0.27 [+0.05, +0.51] | 23% / 41% |
+| m = 7 (+4) | −0.09 [−0.21, +0.01] / −0.04 / −0.09 (sentence chrF −0.18 [−0.28, −0.09]) | 49% / 74% |
+
+- **Small but significant gains from coarse and middle restarts; none from the finest.** Under greedy decoding the V-cycle is a deterministic map, and it converges: the share of fixed points grows every cycle. Length is unchanged.
+- **Raw re-encoding (m = 5, one cycle): −4.28 BLEU [−4.77, −3.81]**, length ratio 1.053. The noisy tail lengthens and degrades the translations. Canonical form is essential.
+- **The residual does not flag bad translations** (worst-decile sentence chrF: AUROC 0.51). With the prompt fixing the content, the reference score mostly reflects content choices.
+- **Example (sentence 2).** The single pass gives "…in the new B 33 pedestrian traffic was moved into operation in the village premises". One cycle from m = 5 gives "…the new B 33 pedestrian light was put into operation at the village park", but "another another" becomes "one one".
+
+**XSum, smoke test only** (200 articles; the full 11,334 run is planned for the rented GPU). ROUGE stays flat (R-1 34.06 → 33.83–34.03, R-2 12.44 → 12.69–13.16). Summary perplexity under GPT-2 falls 78.9 → 61–67. Content kept, fluency up.
+
+**LLM judge** (`experiments/judge.py`). A local open model; next-token probabilities for "A" and "B"; both orders averaged; order agreement and letter-A share reported as diagnostics. The plumbing was tested with Qwen2.5-0.5B-Instruct, which answers "A" 92–99% of the time (order agreement 0%), so it is useless as a judge, and its outputs were deleted. The real judge is Qwen2.5-7B-Instruct on the rented GPU. Its human-vs-NCM sanity check runs first and decides whether its verdicts mean anything.
+
+**Rented-GPU tooling** (`experiments/box/`):
+- `setup.sh`, `queue.sh`, `push.sh`, `pull.sh`. Code and results travel by SSH from the laptop; there is no git and no token on the box.
+- `queue.sh` runs a scoring check first, then two lanes in parallel: 17 more LM1B-medium seeds (20 in all) plus MAUVE features and quality checks, and full XSum. The judge runs after both.
+- The judged comparisons are fixed in advance: one cycle from m = 6 (LM1B) or m = 5 (XSum, WMT14).
+- `MAX_MINUTES` schedules a hard shutdown, a cost cap.
+- MAUVE's CPU-only statistics run on the laptop from the pulled features.
+- `experiments/check_gpu_scoring.py` re-scores committed samples on a new machine.
+- `*.sh` files are forced to LF (`.gitattributes`), since CRLF breaks bash on Linux.
+- The large resumable state (`results/cache/*_vcycle*.pt`, 28 MB for WMT14, about 85 MB for XSum) is not committed. Every reported number and three examples per variant are in the JSON outputs.
+
+### 2026-10-21/22 (phase B: full XSum, 20 seeds, MAUVE at scale, the LLM judge)
+
+**Where it ran.**
+- **Laptop (RTX 4050, 6 GB):** XSum on all 11,334 articles plus the raw-restriction ablation, LM1B-medium seeds 2–18, and the MAUVE features and statistics.
+- **One AWS g5.2xlarge (A10G, 24 GB, us-east-1d):** the GPU scoring check, the five judge runs (`experiments/box/judges.sh`), then the quality checks on 20 seeds (`after_judges.sh`). The quality job was moved there from the laptop to free the laptop's CPU.
+- `analyze.py` ran on the laptop: on the box it stopped at the TinyStories config, which was not copied.
+
+**Memory-paging fix.** The first XSum passes took about 60 minutes each. GPT-2 large stayed on the GPU after scoring, the GPU sat at 5.5 of 6 GB, and Windows silently paged GPU memory to RAM. `Conditional.genppl_nll` now moves GPT-2 to the GPU only while it scores. With `XSUM_BS=16` a pass takes about 7.5 minutes.
+
+**XSum, all 11,334 articles** (greedy as released; single pass R-1/R-2/R-L 34.92/12.71/27.93, GPT-2 PPL 82.6, 20.7 words):
+- Three cycles from m = 5 (+12 NFE): R-1/R-2/R-L +0.24 / +0.25 / +0.19, all CIs above zero; PPL 62.5 (×0.756 [0.749, 0.764]); length unchanged. 47% of summaries are fixed points by cycle 3.
+- One cycle from m = 5: +0.19 / +0.18 / +0.15, PPL ×0.828.
+- m = 3 is weaker on ROUGE (+0.13 / +0.20 / +0.11 after three cycles) with a similar PPL drop.
+- **Raw re-encoding** (m = 5, one cycle) costs little here (R-2 +0.13 instead of +0.18; 20.9 words), as the 79% round trip for both forms predicted.
+- **The residual barely flags the worst summaries** (AUROC 0.60–0.63).
+
+**LM1B-medium, 20 seeds × 256 samples.** Single pass 88.8, no restriction (m = 6) 88.4, V-cycle **68.6**: ratio 0.776 [0.769, 0.783], better on 20 of 20 seeds. At m = 8: 76.8 (0.866 [0.861, 0.871]). The 3-seed estimates (0.783, 0.871) held.
+
+**MAUVE at 5,120 samples per variant** (5,120 human chunks, GPT-2-large features):
+- Single pass 0.312, no restriction 0.307, **V-cycle 0.410**.
+- Over 20 rounds of paired half-size subsamples, the V-cycle leads no restriction by **+0.077 [+0.024, +0.130]**, ahead in 20 of 20 rounds. At 768 samples the same comparison was +0.06 [−0.10, +0.19].
+- Absolute MAUVE falls as the sample count grows (more clusters), so only differences compare across sizes.
+
+**Quality on 20 seeds.**
+- Qwen2.5-1.5B ratio vs no restriction: 0.724 [0.717, 0.730] at m = 6 and 0.837 [0.832, 0.843] at m = 8.
+- Human text: 53.5 (GPT-2) and 40.8 (Qwen).
+- One V-cycle closes **51%** of the log-perplexity gap between NCM and human text: (ln 88.8 − ln 68.6) / (ln 88.8 − ln 53.5). **Correction:** a status digest to the user said 57%, which is the same ratio on the linear perplexity scale; the log scale is the right one.
+
+**LLM judge** (Qwen2.5-7B-Instruct, both orders, mean of P(A) / (P(A) + P(B)) over the orders):
+
+| A vs B | Items | Mean preference for A [95% CI] | Share preferring A | Order agreement | Letter-A share |
+|---|---|---|---|---|---|
+| human vs NCM single pass (sanity check) | 5,120 | 0.669 [0.664, 0.674] | 97% | 33% | 0.18 |
+| V-cycle m = 6 vs no restriction m = 6 | 5,120 | 0.589 [0.581, 0.597] | 64% | 48% | 0.44 |
+| V-cycle m = 6 vs single pass | 5,120 | 0.633 [0.626, 0.639] | 76% | 37% | 0.26 |
+| XSum: one cycle from m = 5 vs single pass | 2,000 | 0.526 [0.516, 0.535] | 44% | 23% | 0.80 |
+| WMT14: one cycle from m = 5 vs single pass | 3,003 | 0.515 [0.506, 0.525] | 44% | 33% | 0.72 |
+
+- **The sanity check passes**, so its verdicts mean something.
+- **Strong position bias, in opposite directions:** the judge favors the second text on LM1B and the first on XSum and WMT14. Averaging over both orders removes it from the means, but single verdicts are noisy (order agreement 23–48%).
+- **On free-running text the judge agrees with the other three measures.** On the prompted tasks it is a near-tie: the mean leans to the V-cycle while the share leans to the single pass, which is what a small fluency polish on mostly identical outputs looks like.
+- `judge.py` now asks the model for the logits of the answer position only (`logits_to_keep=1`; same outputs, much less memory).
+
+**AWS operations.**
+- **Capacity:** g7e, g6e and g6 had no capacity in us-east-1. A script tried 20 type and zone pairs every 2 minutes, with a 60-minute limit, and launched the first that worked: a g5.2xlarge.
+- **Launch:** explicit parameters, not the launch template (its disk names the old image's snapshot): DLAMI base Ubuntu 24.04 of 2026-10-16, a 150 GB gp3 disk deleted on termination, shutdown behavior "terminate", and a hard shutdown scheduled on the box.
+- **Cost and cleanup:** ran 21:43–23:29 UTC, about $2.15. Results were pulled selectively (the box's MAUVE and quality inputs were older than the laptop's), then the instance was terminated by hand. Afterwards no instance and no volume was left in us-east-1.
+
+**Verdict after phase B.**
+- **Free-running text:** a clear, robust win. Four independent measures agree: two scorers from different model families, MAUVE and a judge. Medium plus one V-cycle beats the 2.3× larger model's single pass at less compute.
+- **Prompted tasks:** a small, significant polish on automatic metrics that a judge barely notices; classifier-free guidance is the bigger lever on WMT14.
+- **Still missing:** a human evaluation and the CFG and MBR comparisons at equal compute.

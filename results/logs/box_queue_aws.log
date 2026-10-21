@@ -1,0 +1,76 @@
+[18:19:00] start xsum_vcycle
+[19:46:28] start xsum_vcycle
+[20:34:29] ok xsum_vcycle
+[20:34:29] start xsum_vcycle_raw
+[21:11:16] ok xsum_vcycle_raw
+[21:11:16] start lm1b_medium_s2
+[21:15:10] ok lm1b_medium_s2
+[21:15:10] start lm1b_medium_s3
+[21:18:59] ok lm1b_medium_s3
+[21:18:59] start lm1b_medium_s4
+[21:22:58] ok lm1b_medium_s4
+[21:22:58] start lm1b_medium_s5
+[21:27:13] ok lm1b_medium_s5
+[21:27:14] start lm1b_medium_s6
+[21:31:14] ok lm1b_medium_s6
+[21:31:14] start lm1b_medium_s7
+[21:35:36] ok lm1b_medium_s7
+[21:35:37] start lm1b_medium_s8
+[21:39:43] ok lm1b_medium_s8
+[21:39:43] start lm1b_medium_s9
+[21:43:40] ok lm1b_medium_s9
+[21:43:40] start lm1b_medium_s10
+[21:47:32] ok lm1b_medium_s10
+[21:47:32] start lm1b_medium_s11
+[21:51:27] ok lm1b_medium_s11
+[21:51:27] start lm1b_medium_s12
+[21:55:20] ok lm1b_medium_s12
+[21:55:20] start lm1b_medium_s13
+[21:59:12] ok lm1b_medium_s13
+[21:59:12] start lm1b_medium_s14
+[22:03:07] ok lm1b_medium_s14
+[22:03:08] start lm1b_medium_s15
+[22:07:00] ok lm1b_medium_s15
+[22:07:00] start lm1b_medium_s16
+[22:11:13] ok lm1b_medium_s16
+[22:11:13] start lm1b_medium_s17
+[22:32:27] skip xsum_vcycle (complete)
+[22:32:27] skip xsum_vcycle_raw (complete)
+[22:32:28] skip lm1b_medium_s2 (complete)
+[22:32:28] skip lm1b_medium_s3 (complete)
+[22:32:28] skip lm1b_medium_s4 (complete)
+[22:32:28] skip lm1b_medium_s5 (complete)
+[22:32:28] skip lm1b_medium_s6 (complete)
+[22:32:28] skip lm1b_medium_s7 (complete)
+[22:32:28] skip lm1b_medium_s8 (complete)
+[22:32:28] skip lm1b_medium_s9 (complete)
+[22:32:28] skip lm1b_medium_s10 (complete)
+[22:32:29] skip lm1b_medium_s11 (complete)
+[22:32:29] skip lm1b_medium_s12 (complete)
+[22:32:29] skip lm1b_medium_s13 (complete)
+[22:32:29] skip lm1b_medium_s14 (complete)
+[22:32:29] skip lm1b_medium_s15 (complete)
+[22:32:29] skip lm1b_medium_s16 (complete)
+[22:32:29] start lm1b_medium_s17
+[22:36:15] ok lm1b_medium_s17
+[22:36:15] start lm1b_medium_s18
+[22:40:32] ok lm1b_medium_s18
+[22:40:32] start lm1b_mauve_medium
+[21:50:09] start box_check_scoring
+[21:51:09] ok box_check_scoring
+[21:51:09] start judge_lm1b_human
+[22:06:56] ok judge_lm1b_human
+[22:06:56] start judge_lm1b_vc_nr
+[22:22:48] ok judge_lm1b_vc_nr
+[22:22:48] start judge_lm1b_vc_base
+[22:38:42] ok judge_lm1b_vc_base
+[22:38:42] start judge_xsum
+[22:47:46] ok judge_xsum
+[22:47:46] start judge_wmt14
+[22:53:10] ok judge_wmt14
+[22:53:10] judges done
+[22:53:10] start lm1b_quality_medium
+[23:23:46] ok lm1b_quality_medium
+[23:23:46] start analyze
+[23:23:59] FAILED analyze
+[23:23:59] all done

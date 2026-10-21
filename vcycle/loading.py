@@ -32,6 +32,20 @@ class NCM:
     device: str
 
 
+def load_pre_tokenizer(checkpoint_dir):
+    """(config, pre-tokenizer) of a released checkpoint, without loading any weights."""
+    import_ncm()
+    import hydra
+    from utils.registry import tokenizers
+
+    cfg = OmegaConf.load(os.path.join(checkpoint_dir, "config.yaml"))
+    pt = cfg.tokenizer.pre_tokenizer
+    for key, name in (("vocab_file_path", "bpe_vocab"), ("merges_file_path", "bpe_merges")):
+        if cfg.checkpoints.get(name):
+            pt[key] = os.path.join(checkpoint_dir, cfg.checkpoints[name])
+    return cfg, hydra.utils.get_class(tokenizers[pt.name]).from_config(pt)
+
+
 def load(checkpoint_dir, device="cpu", quiet=True):
     import_ncm()
     import hydra

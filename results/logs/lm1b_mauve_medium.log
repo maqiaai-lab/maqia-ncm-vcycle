@@ -1,270 +1,72 @@
-features from C:\Users\tomas\.gemini\antigravity\scratch\NCM\results\cache\lm1b_mauve_feats_medium.pt
-WARNING clustering 1536 points to 77 centroids: please provide at least 3003 training points
-MAUVE baseline           0.458
-WARNING clustering 1536 points to 77 centroids: please provide at least 3003 training points
-MAUVE vcycle|m=6         0.626
-WARNING clustering 1536 points to 77 centroids: please provide at least 3003 training points
-MAUVE no-restrict|m=6    0.452
-WARNING clustering 1536 points to 77 centroids: please provide at least 3003 training points
-MAUVE vcycle|m=8         0.612
-WARNING clustering 1536 points to 77 centroids: please provide at least 3003 training points
-MAUVE no-restrict|m=8    0.475
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-  round 10/50
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-  round 20/50
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-  round 30/50
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-  round 40/50
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-WARNING clustering 768 points to 38 centroids: please provide at least 1482 training points
-  round 50/50
-vcycle|m=6 - baseline: full +0.168; half-size +0.098 [-0.052, +0.239], won 88% of rounds
-vcycle|m=6 - no-restrict|m=6: full +0.174; half-size +0.058 [-0.103, +0.189], won 80% of rounds
-vcycle|m=8 - baseline: full +0.154; half-size +0.065 [-0.071, +0.214], won 74% of rounds
-vcycle|m=8 - no-restrict|m=8: full +0.138; half-size +0.037 [-0.147, +0.183], won 66% of rounds
+W1021 22:40:43.341000 15900 .venv\Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+Loading weights:   0%|          | 0/436 [00:00<?, ?it/s]Loading weights:   2%|1         | 7/436 [00:00<00:07, 59.74it/s]Loading weights:   3%|2         | 13/436 [00:00<00:07, 54.79it/s]Loading weights:   5%|5         | 22/436 [00:00<00:06, 68.78it/s]Loading weights:   7%|6         | 29/436 [00:00<00:06, 61.62it/s]Loading weights:   8%|8         | 36/436 [00:00<00:06, 61.56it/s]Loading weights:  11%|#         | 46/436 [00:00<00:05, 68.26it/s]Loading weights:  13%|#3        | 57/436 [00:00<00:04, 80.19it/s]Loading weights:  16%|#5        | 69/436 [00:00<00:04, 90.33it/s]Loading weights:  18%|#8        | 79/436 [00:01<00:04, 82.90it/s]Loading weights:  20%|##        | 88/436 [00:01<00:05, 63.90it/s]Loading weights:  25%|##4       | 108/436 [00:01<00:03, 93.07it/s]Loading weights:  27%|##7       | 119/436 [00:01<00:04, 74.83it/s]Loading weights:  29%|##9       | 128/436 [00:01<00:04, 67.22it/s]Loading weights:  33%|###2      | 142/436 [00:01<00:03, 79.02it/s]Loading weights:  38%|###7      | 164/436 [00:02<00:02, 100.50it/s]Loading weights:  41%|####1     | 179/436 [00:02<00:02, 107.66it/s]Loading weights:  44%|####3     | 191/436 [00:02<00:03, 80.63it/s] Loading weights:  46%|####6     | 201/436 [00:02<00:03, 67.78it/s]Loading weights:  48%|####7     | 209/436 [00:02<00:03, 62.42it/s]Loading weights:  50%|####9     | 217/436 [00:02<00:03, 56.44it/s]Loading weights:  51%|#####1    | 224/436 [00:03<00:03, 54.38it/s]Loading weights: 100%|##########| 436/436 [00:03<00:00, 137.64it/s]
+WARNING clustering 10240 points to 512 centroids: please provide at least 19968 training points
+MAUVE baseline           0.312
+WARNING clustering 10240 points to 512 centroids: please provide at least 19968 training points
+MAUVE vcycle|m=6         0.410
+WARNING clustering 10240 points to 512 centroids: please provide at least 19968 training points
+MAUVE no-restrict|m=6    0.307
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+  round 10/20
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+WARNING clustering 5120 points to 256 centroids: please provide at least 9984 training points
+  round 20/20
+vcycle|m=6 - baseline: full +0.098; half-size +0.074 [+0.049, +0.103], won 100% of rounds
+vcycle|m=6 - no-restrict|m=6: full +0.103; half-size +0.077 [+0.024, +0.130], won 100% of rounds

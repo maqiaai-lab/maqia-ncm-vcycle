@@ -1,0 +1,5 @@
+LevelDecoder vs generate() on 64 wmt14 documents: 0 differ with the prompt cache, 0 without
+baseline               {'bleu': 21.729, 'bleu_lc': 22.622, 'chrf': 49.585, 'len_ratio': 0.938, 'bleu_from_stats': 21.729, 'seconds': 62.506}
+residual: {'fixed_point_rate': 0.0, 'roundtrip_total': {'spearman_with_quality': -0.17997082921443155, 'auroc_worst_decile': 0.7266667240459264}, 'local_total': {'spearman_with_quality': -0.20046035919208793, 'auroc_worst_decile': 0.7445364698476088}}
+no-restrict|m=5        identical to the single pass on 100.00% of documents
+vcycle|m=5|c=1         {'bleu': 17.447, 'bleu_lc': 18.109, 'chrf': 48.27, 'len_ratio': 1.053, 'bleu_from_stats': 17.447, 'seconds': 58.886, 'changed_vs_prev': 1.0}

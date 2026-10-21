@@ -36,30 +36,7 @@ class LM1B:
     # ---- sampling (scripts/eval_shard.py) ------------------------------------------------------
     def pick_tokens(self, logits):
         """Decoder token picking with the released frequency and adjacency penalties (plain argmax if none)."""
-        if self.freq <= 0 and not self.adj:
-            return logits.argmax(-1)
-        B, T, V = logits.shape
-        lg = logits.double()
-        allow = (self.allow[:V] * T)[None, :] if self.allow is not None else None
-        al = self.adj[0] if self.adj else 0.0
-        aw = int(self.adj[1]) if self.adj and len(self.adj) > 1 else 1
-        ad = self.adj[2] if self.adj and len(self.adj) > 2 else 1.0
-        cnt = torch.zeros(B, V, dtype=torch.float64, device=lg.device)
-        out = torch.empty(B, T, dtype=torch.long, device=lg.device)
-        hist = []
-        for t in range(T):
-            step = lg[:, t, :].clone()
-            if self.freq > 0:
-                step -= self.freq * ((cnt - allow).clamp_min(0.0) if allow is not None else cnt)
-                if self.mu > 0 and allow is not None:
-                    step += self.mu * ((T - t) / T) * (allow - cnt).clamp_min(0.0)
-            for j, h in enumerate(reversed(hist[-aw:])):
-                step.scatter_add_(1, h[:, None], torch.full((B, 1), -al * ad ** j, dtype=torch.float64, device=lg.device))
-            p = step.argmax(-1)
-            out[:, t] = p
-            hist.append(p)
-            cnt.scatter_add_(1, p[:, None], torch.ones(B, 1, dtype=torch.float64, device=lg.device))
-        return out
+        return pick_tokens(logits, self.freq, self.mu, self.adj, self.allow)
 
     def sample_l0(self, B):
         return torch.multinomial(self.l0_p, B * self.dec.levels[0], replacement=True).view(B, -1).to(self.dev)
@@ -172,6 +149,35 @@ class LM1B:
             return tok.hf_tokenizer.batch_decode(ids.tolist())
         return [tok.decode([t for t in _body(row, self.pad, self.cut_eos) if t != self.eos], skip_special_tokens=True)
                 for row in ids.tolist()]
+
+
+def pick_tokens(logits, freq=0.0, mu=0.0, adj=None, allow=None):
+    """Token picking from decoder logits as scripts/eval_shard.py does it: a frequency penalty on counts above a unigram
+    allowance, a deficit bonus below it, and an adjacency penalty on recent tokens; plain argmax if there are none."""
+    if freq <= 0 and not adj:
+        return logits.argmax(-1)
+    B, T, V = logits.shape
+    lg = logits.double()
+    allow = (allow[:V] * T)[None, :] if allow is not None else None
+    al = adj[0] if adj else 0.0
+    aw = int(adj[1]) if adj and len(adj) > 1 else 1
+    ad = adj[2] if adj and len(adj) > 2 else 1.0
+    cnt = torch.zeros(B, V, dtype=torch.float64, device=lg.device)
+    out = torch.empty(B, T, dtype=torch.long, device=lg.device)
+    hist = []
+    for t in range(T):
+        step = lg[:, t, :].clone()
+        if freq > 0:
+            step -= freq * ((cnt - allow).clamp_min(0.0) if allow is not None else cnt)
+            if mu > 0 and allow is not None:
+                step += mu * ((T - t) / T) * (allow - cnt).clamp_min(0.0)
+        for j, h in enumerate(reversed(hist[-aw:])):
+            step.scatter_add_(1, h[:, None], torch.full((B, 1), -al * ad ** j, dtype=torch.float64, device=lg.device))
+        p = step.argmax(-1)
+        out[:, t] = p
+        hist.append(p)
+        cnt.scatter_add_(1, p[:, None], torch.ones(B, 1, dtype=torch.float64, device=lg.device))
+    return out
 
 
 def _body(row, pad, cut_eos=None):

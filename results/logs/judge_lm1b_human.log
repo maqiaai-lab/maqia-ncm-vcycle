@@ -1,0 +1,17 @@
+lm1b: 5120 items, human vs baseline, judge Qwen/Qwen2.5-7B-Instruct
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 3460.94it/s]
+  16/10240
+  816/10240
+  1616/10240
+  2416/10240
+  3216/10240
+  4016/10240
+  4816/10240
+  5616/10240
+  6416/10240
+  7216/10240
+  8016/10240
+  8816/10240
+  9616/10240
+{'task': 'lm1b', 'size': 'medium', 'a': 'human', 'b': 'baseline', 'judge': 'Qwen/Qwen2.5-7B-Instruct', 'items': 5120, 'mean_preference_for_a': [0.6694482625696191, 0.6641340029040553, 0.6743856246929778], 'share_preferring_a': [0.971875, 0.9669921875, 0.976171875], 'order_agreement': 0.330859375, 'letter_a_share': 0.18108380932839002, 'seconds': 928.5399768759999}

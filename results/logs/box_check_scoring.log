@@ -1,0 +1,8 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+device cuda (NVIDIA A10G); 256 committed samples of lm1b_small_s42
+decode + pick: 22/256 samples differ, 0.00134 of tokens (near-ties in token picking)
+residual max |diff|: round trip 0.03846, level-local 0.04167
+Loading weights:   0%|          | 0/436 [00:00<?, ?it/s]Loading weights:  74%|███████▍  | 324/436 [00:00<00:00, 3233.05it/s]Loading weights: 100%|██████████| 436/436 [00:00<00:00, 3258.87it/s]
+token counts equal: True; per-sample NLL max relative difference 3.04e-07
+corpus PPL: committed 95.808, here 95.808
+scoring check passed

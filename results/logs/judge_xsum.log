@@ -1,0 +1,9 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+xsum: 2000 items, vcycle|m=5|c=1 vs baseline, judge Qwen/Qwen2.5-7B-Instruct
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:  96%|█████████▌| 325/339 [00:00<00:00, 3212.81it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 3270.08it/s]
+  16/4000
+  816/4000
+  1616/4000
+  2416/4000
+  3216/4000
+{'task': 'xsum', 'size': None, 'a': 'vcycle|m=5|c=1', 'b': 'baseline', 'judge': 'Qwen/Qwen2.5-7B-Instruct', 'items': 2000, 'mean_preference_for_a': [0.5255811611621298, 0.5156944709242154, 0.5354291689455114], 'share_preferring_a': [0.44, 0.4175, 0.462], 'order_agreement': 0.2295, 'letter_a_share': 0.7983595674841322, 'seconds': 526.6706638979999}

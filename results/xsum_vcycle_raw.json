@@ -1,0 +1,140 @@
+{
+  "task": "xsum",
+  "n": 11334,
+  "levels": [
+    4,
+    6,
+    10,
+    14,
+    20,
+    26,
+    32,
+    40,
+    48
+  ],
+  "K": 9,
+  "device": "cuda",
+  "sampling": {
+    "temperature": 1.0,
+    "top_k": 1,
+    "top_p": 0.0
+  },
+  "greedy": true,
+  "prefix_cache": "cached (pad-aware)",
+  "restriction": "raw picked ids",
+  "variants": {
+    "baseline": {
+      "rouge1": 34.922319899026064,
+      "rouge2": 12.710795509784164,
+      "rougeL": 27.9256216873985,
+      "gen_ppl": 82.62934533795786,
+      "words": 20.657755426151404,
+      "extra_nfe": 0,
+      "seconds": 500.7647958999878,
+      "examples": [
+        "The number of beds made available for homeless people living in accommodation in Wales has risen in last year, a Welsh housing homelessness charity has said.",
+        "A man has been arrested in connection with a number of firearms ammunition and ammunition were seized in Edinburgh.",
+        "Four people have been charged with, kidnapping, beating, beat and beat a white black man in Chicago."
+      ]
+    },
+    "no-restrict|m=5": {
+      "identical_to_single_pass": 1.0,
+      "extra_nfe": 4,
+      "seconds": 413.4757537999976
+    },
+    "vcycle|m=5|c=1": {
+      "rouge1": 35.16444671509077,
+      "rouge2": 12.844739847109713,
+      "rougeL": 28.07918161459263,
+      "gen_ppl": 69.56073262861399,
+      "words": 20.878683606846657,
+      "extra_nfe": 4,
+      "seconds": 415.30573469999945,
+      "changed_vs_prev": 1.0,
+      "vs_baseline": {
+        "rouge1": [
+          0.24212681606469735,
+          0.1787277153950535,
+          0.30410313554343804
+        ],
+        "rouge2": [
+          0.13394433732554736,
+          0.08002823531750207,
+          0.18513838281634476
+        ],
+        "rougeL": [
+          0.15355992719413097,
+          0.09990808184230898,
+          0.20602806319147507
+        ],
+        "gen_ppl_ratio": [
+          0.8418405391463211,
+          0.8341028043302147,
+          0.8494078711461223
+        ],
+        "words": [
+          0.22092818069525322,
+          0.20009705311452267,
+          0.2411394917946003
+        ]
+      },
+      "examples": [
+        "The number of beds made available for homeless people living in prisons in Wales has risen in last year, a Welsh housing benefit charity has said.",
+        "A man has been arrested in connection with a number of firearms weapons and ammunition were seized in Edinburgh.",
+        "Four people have been charged with kidnap, kidnap, beat beat and killed a white black man in Chicago."
+      ]
+    }
+  },
+  "check": {
+    "docs": 64,
+    "mismatch_cached": 0,
+    "mismatch_uncached": 0
+  },
+  "residual": {
+    "fixed_point_rate": 0.0,
+    "disagree_rate_per_level": {
+      "roundtrip": [
+        0.5046982765197754,
+        0.648358941078186,
+        0.6827422380447388,
+        0.7034082412719727,
+        0.7129786610603333,
+        0.7602584958076477,
+        0.7289957404136658,
+        0.7753551006317139,
+        0.6174600124359131
+      ],
+      "local": [
+        0.5046982765197754,
+        0.6508734822273254,
+        0.702735185623169,
+        0.716598629951477,
+        0.7245941162109375,
+        0.7481064796447754,
+        0.7324477434158325,
+        0.7573848962783813,
+        0.6403005719184875
+      ]
+    },
+    "roundtrip_total": {
+      "spearman_with_quality": -0.05115986108120665,
+      "auroc_worst_decile": 0.5769737643554049
+    },
+    "local_total": {
+      "spearman_with_quality": -0.02823785906329019,
+      "auroc_worst_decile": 0.5738949064984775
+    }
+  },
+  "examples": {
+    "source": [
+      "Prison Link Cymru had 1,099 referrals in 2015-16 and said some ex-offenders were living rough for up to a year before finding suitable accommodation.\nWorkers at the charity claim investment in housing would be cheaper than jailing homeless repeat offenders.\nThe Welsh Government said more people than ever were getting help to address housing problems.\nChanges to the Housing Act in Wales, introduced in 2015, removed the right for prison leavers to be given priority for accommodation.\nPrison Link Cymru, which helps people find accommodation after their release, said things were ...",
+      "Officers searched properties in the Waterfront Park and Colonsay View areas of the city on Wednesday.\nDetectives said three firearms, ammunition and a five-figure sum of money were recovered.\nA 26-year-old man who was arrested and charged appeared at Edinburgh Sheriff Court on Thursday.<|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|><|pad|> ...",
+      "Jordan Hill, Brittany Covington and Tesfaye Cooper, all 18, and Tanishia Covington, 24, appeared in a Chicago court on Friday.\nThe four have been charged with hate crimes and aggravated kidnapping and battery, among other things.\nAn online fundraiser for their victim has collected $51,000 (\u00c2\u00a342,500) so far.\nDenying the four suspects bail, Judge Maria Kuriakos Ciesil asked: \"Where was your sense of decency?\"\nProsecutors told the court the beating started in a van and continued at a house, ..."
+    ],
+    "reference": [
+      "There is a \"chronic\" need for more housing for prison leavers in Wales, according to a charity.",
+      "A man has appeared in court after firearms, ammunition and cash were seized by police in Edinburgh.",
+      "Four people accused of kidnapping and torturing a mentally disabled man in a \"racially motivated\" attack streamed on Facebook have been denied bail."
+    ]
+  }
+}

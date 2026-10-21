@@ -1,0 +1,131 @@
+{
+  "task": "wmt14",
+  "n": 3003,
+  "levels": [
+    1,
+    4,
+    8,
+    14,
+    20,
+    26,
+    32,
+    40,
+    48,
+    56,
+    64
+  ],
+  "K": 11,
+  "device": "cuda",
+  "sampling": {
+    "temperature": 1.0,
+    "top_k": 1,
+    "top_p": 0.0
+  },
+  "greedy": true,
+  "prefix_cache": "cached (pad-aware)",
+  "restriction": "raw picked ids",
+  "variants": {
+    "baseline": {
+      "bleu": 21.729426522377366,
+      "bleu_lc": 22.622337291538962,
+      "chrf": 49.585207879612106,
+      "len_ratio": 0.937597977243995,
+      "bleu_from_stats": 21.729426522377366,
+      "extra_nfe": 0,
+      "seconds": 62.505889499996556,
+      "examples": [
+        "Gach: Even more safety for.",
+        "They are not 100 meters away from another another: On Tuesday in the new B 33 pedestrian traffic was moved into operation in the village premises - in sight of the older town hall lights.",
+        "There are so two so close: intention or coup d coup coup?"
+      ]
+    },
+    "no-restrict|m=5": {
+      "identical_to_single_pass": 1.0,
+      "extra_nfe": 6,
+      "seconds": 55.509172300007776
+    },
+    "vcycle|m=5|c=1": {
+      "bleu": 17.44651545382614,
+      "bleu_lc": 18.10893116332402,
+      "chrf": 48.2698560821298,
+      "len_ratio": 1.0525242309313105,
+      "bleu_from_stats": 17.44651545382614,
+      "extra_nfe": 6,
+      "seconds": 58.88637530000415,
+      "changed_vs_prev": 1.0,
+      "vs_baseline": {
+        "bleu": [
+          -4.2829110685512255,
+          -4.772386316297154,
+          -3.8125708295586356
+        ],
+        "chrf_sentence": [
+          -1.4112731088467787,
+          -1.659473524423945,
+          -1.17226041682476
+        ]
+      },
+      "examples": [
+        "Gut:: more safety for for.",
+        "They are not 100 meters away from one another: On Tuesday the the new B33 foot light light was put into operation at the village park - in in sight of the older town hall city.",
+        "Two plants are so close two: intention or coup d'\u00e9tat?"
+      ]
+    }
+  },
+  "check": {
+    "docs": 64,
+    "mismatch_cached": 0,
+    "mismatch_uncached": 0
+  },
+  "residual": {
+    "fixed_point_rate": 0.0,
+    "disagree_rate_per_level": {
+      "roundtrip": [
+        0.35930734872817993,
+        0.8113552927970886,
+        0.8141857981681824,
+        0.7989391684532166,
+        0.8032800555229187,
+        0.8265964984893799,
+        0.8093885183334351,
+        0.8746752738952637,
+        0.8765679597854614,
+        0.8900445103645325,
+        0.7233755588531494
+      ],
+      "local": [
+        0.35930734872817993,
+        0.8066933155059814,
+        0.8211787939071655,
+        0.80628901720047,
+        0.7896437048912048,
+        0.8072952628135681,
+        0.7895438075065613,
+        0.8397103548049927,
+        0.8510586023330688,
+        0.869154691696167,
+        0.8018699884414673
+      ]
+    },
+    "roundtrip_total": {
+      "spearman_with_quality": -0.17997082921443155,
+      "auroc_worst_decile": 0.7266667240459264
+    },
+    "local_total": {
+      "spearman_with_quality": -0.20046035919208793,
+      "auroc_worst_decile": 0.7445364698476088
+    }
+  },
+  "examples": {
+    "source": [
+      "Gutach: Noch mehr Sicherheit f\u00fcr Fu\u00dfg\u00e4nger",
+      "Sie stehen keine 100 Meter voneinander entfernt: Am Dienstag ist in Gutach die neue B 33-Fu\u00dfg\u00e4ngerampel am Dorfparkplatz in Betrieb genommen worden - in Sichtweite der \u00e4lteren Rathausampel.",
+      "Zwei Anlagen so nah beieinander: Absicht oder Schildb\u00fcrgerstreich?"
+    ],
+    "reference": [
+      "Gutach: Increased safety for pedestrians",
+      "They are not even 100 metres apart: On Tuesday, the new B 33 pedestrian lights in Dorfparkplatz in Gutach became operational - within view of the existing Town Hall traffic lights.",
+      "Two sets of lights so close to one another: intentional or just a silly error?"
+    ]
+  }
+}

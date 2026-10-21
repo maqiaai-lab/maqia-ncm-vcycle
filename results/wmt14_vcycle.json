@@ -1,0 +1,357 @@
+{
+  "task": "wmt14",
+  "n": 3003,
+  "levels": [
+    1,
+    4,
+    8,
+    14,
+    20,
+    26,
+    32,
+    40,
+    48,
+    56,
+    64
+  ],
+  "K": 11,
+  "device": "cuda",
+  "sampling": {
+    "temperature": 1.0,
+    "top_k": 1,
+    "top_p": 0.0
+  },
+  "greedy": true,
+  "prefix_cache": "cached (pad-aware)",
+  "restriction": "canonical: text, EOS, PAD",
+  "variants": {
+    "baseline": {
+      "bleu": 21.729426522377366,
+      "bleu_lc": 22.622337291538962,
+      "chrf": 49.585207879612106,
+      "len_ratio": 0.937597977243995,
+      "bleu_from_stats": 21.729426522377366,
+      "extra_nfe": 0,
+      "seconds": 62.62550870000268,
+      "examples": [
+        "Gach: Even more safety for.",
+        "They are not 100 meters away from another another: On Tuesday in the new B 33 pedestrian traffic was moved into operation in the village premises - in sight of the older town hall lights.",
+        "There are so two so close: intention or coup d coup coup?"
+      ]
+    },
+    "no-restrict|m=3": {
+      "identical_to_single_pass": 1.0,
+      "extra_nfe": 8,
+      "seconds": 60.823192600000766
+    },
+    "vcycle|m=3|c=1": {
+      "bleu": 22.053801374508094,
+      "bleu_lc": 22.931526382516555,
+      "chrf": 49.75583616508523,
+      "len_ratio": 0.9386262115465656,
+      "bleu_from_stats": 22.053801374508094,
+      "extra_nfe": 8,
+      "seconds": 63.09030540000822,
+      "changed_vs_prev": 0.9850149750709534,
+      "vs_baseline": {
+        "bleu": [
+          0.3243748521307275,
+          0.054460105690571504,
+          0.5918592069939557
+        ],
+        "chrf_sentence": [
+          0.2167111940220553,
+          0.013160807323300383,
+          0.4106342281278118
+        ]
+      },
+      "examples": [
+        "Gutach: more safety for.",
+        "They are not 100 meters away from another: On Tuesday the new 33 foot light light at the village park was put into operation - into - in sight of the older town hall lights.",
+        "Two plants plants are so close: intention or coup d'\u00e9tat?"
+      ]
+    },
+    "vcycle|m=3|c=2": {
+      "bleu": 22.21696171149754,
+      "bleu_lc": 23.076708769896342,
+      "chrf": 49.74785514588209,
+      "len_ratio": 0.9377665402444163,
+      "bleu_from_stats": 22.21696171149754,
+      "extra_nfe": 16,
+      "seconds": 63.60908870000276,
+      "changed_vs_prev": 0.8168498277664185,
+      "vs_baseline": {
+        "bleu": [
+          0.48753518912017313,
+          0.208328760534188,
+          0.7702247192005091
+        ],
+        "chrf_sentence": [
+          0.22665470554085176,
+          0.026621080410345072,
+          0.43910072189354
+        ]
+      },
+      "examples": [
+        "Gutach: more safety for.",
+        "They are not 100 meters away from each other: on Tuesday, the Tuesday new B 33 foot light traffic light came into operation - in sight in view of the older town hall lights.",
+        "Two plants are so close together: intention or coup d'\u00e9tat?"
+      ]
+    },
+    "vcycle|m=3|c=3": {
+      "bleu": 22.281982280868352,
+      "bleu_lc": 23.179209703856863,
+      "chrf": 49.726560664387804,
+      "len_ratio": 0.9372102823430257,
+      "bleu_from_stats": 22.281982280868352,
+      "extra_nfe": 24,
+      "seconds": 64.0294189999986,
+      "changed_vs_prev": 0.6703296899795532,
+      "vs_baseline": {
+        "bleu": [
+          0.5525557584909855,
+          0.2484238039681805,
+          0.8345787245420576
+        ],
+        "chrf_sentence": [
+          0.18040705193120146,
+          -0.044058971256547765,
+          0.4088207378557618
+        ]
+      },
+      "examples": [
+        "Gutach: more safety for.",
+        "They are not 100 meters away from each other: in Restaurantach Tuesday the new B33 pedestrian light light started at the village park park was - in sight of the older town town lights.",
+        "Two plants are so close together: intention or coup d'\u00e9tat?"
+      ]
+    },
+    "no-restrict|m=5": {
+      "identical_to_single_pass": 1.0,
+      "extra_nfe": 6,
+      "seconds": 56.41404849999526
+    },
+    "vcycle|m=5|c=1": {
+      "bleu": 22.01749040376469,
+      "bleu_lc": 22.85340713120853,
+      "chrf": 49.56709699126108,
+      "len_ratio": 0.9377833965444585,
+      "bleu_from_stats": 22.01749040376469,
+      "extra_nfe": 6,
+      "seconds": 57.57304109999677,
+      "changed_vs_prev": 0.9963369965553284,
+      "vs_baseline": {
+        "bleu": [
+          0.2880638813873233,
+          0.1015782234055501,
+          0.5009021391889275
+        ],
+        "chrf_sentence": [
+          -0.010771201682379876,
+          -0.16288684514929852,
+          0.14682644699607747
+        ]
+      },
+      "examples": [
+        "Gach: even more safety for.",
+        "They are not 100 meters away from one one: On Tuesday, the new B 33 pedestrian light was put into operation at the village park - in sight of the older town hall lights.",
+        "There are two installations so close: intention or a d d coup?"
+      ]
+    },
+    "vcycle|m=5|c=2": {
+      "bleu": 21.963280294211316,
+      "bleu_lc": 22.81485950782698,
+      "chrf": 49.48340257688215,
+      "len_ratio": 0.9381542351453855,
+      "bleu_from_stats": 21.963280294211316,
+      "extra_nfe": 12,
+      "seconds": 57.6686267000041,
+      "changed_vs_prev": 0.7715617418289185,
+      "vs_baseline": {
+        "bleu": [
+          0.2338537718339495,
+          0.024349431016059242,
+          0.4527932279744436
+        ],
+        "chrf_sentence": [
+          -0.1079869476376377,
+          -0.2657068662606798,
+          0.05905773803506881
+        ]
+      },
+      "examples": [
+        "Gach: even more safety for.",
+        "They are not 100 meters away from another another: On Tuesday, the new B 33 pedestrian light was put into operation at the village park - in sight of the older town hall hall.",
+        "There are two installations so close: intention or a coup d coup?"
+      ]
+    },
+    "vcycle|m=5|c=3": {
+      "bleu": 22.001049493036383,
+      "bleu_lc": 22.86129712082101,
+      "chrf": 49.5207664695009,
+      "len_ratio": 0.9377328276443321,
+      "bleu_from_stats": 22.001049493036383,
+      "extra_nfe": 18,
+      "seconds": 57.44461059999594,
+      "changed_vs_prev": 0.5900765657424927,
+      "vs_baseline": {
+        "bleu": [
+          0.27162297065901697,
+          0.046341037751538305,
+          0.5057888921302159
+        ],
+        "chrf_sentence": [
+          -0.10775267983070311,
+          -0.29016788937510435,
+          0.06484261419304746
+        ]
+      },
+      "examples": [
+        "Gach: even more safety for.",
+        "They are not 100 meters away from one another: On Tuesday, the new B 33 pedestrian light was put operation at the village park park - in sight of the older town hall hall.",
+        "There are two installations so close: intention or a coup d coup?"
+      ]
+    },
+    "no-restrict|m=7": {
+      "identical_to_single_pass": 1.0,
+      "extra_nfe": 4,
+      "seconds": 46.78086889999395
+    },
+    "vcycle|m=7|c=1": {
+      "bleu": 21.63577129644512,
+      "bleu_lc": 22.51580267553122,
+      "chrf": 49.40242880413143,
+      "len_ratio": 0.9375642646439106,
+      "bleu_from_stats": 21.63577129644512,
+      "extra_nfe": 4,
+      "seconds": 48.96309689999907,
+      "changed_vs_prev": 0.9913420081138611,
+      "vs_baseline": {
+        "bleu": [
+          -0.0936552259322454,
+          -0.20678568235966324,
+          0.007295603653308181
+        ],
+        "chrf_sentence": [
+          -0.18288962900081202,
+          -0.2778461615000166,
+          -0.09106946163550092
+        ]
+      },
+      "examples": [
+        "Gach: Even more safety for.",
+        "They are not 100 meters away from another another: On Tuesday in the new B 33 pedestrian traffic was moved into operation in the village premises - in sight of the older town hall lights.",
+        "There are so plants so close: intention or coup d coup coup?"
+      ]
+    },
+    "vcycle|m=7|c=2": {
+      "bleu": 21.69170903397256,
+      "bleu_lc": 22.561384998381126,
+      "chrf": 49.37827759809871,
+      "len_ratio": 0.937597977243995,
+      "bleu_from_stats": 21.69170903397256,
+      "extra_nfe": 8,
+      "seconds": 49.24667999999656,
+      "changed_vs_prev": 0.5131534934043884,
+      "vs_baseline": {
+        "bleu": [
+          -0.037717488404805266,
+          -0.1544754521865385,
+          0.0732012435816977
+        ],
+        "chrf_sentence": [
+          -0.20364592330045514,
+          -0.31008453419738397,
+          -0.09314615976285186
+        ]
+      },
+      "examples": [
+        "Gach: Even more safety for.",
+        "They are not 100 meters away from another another: On Tuesday in the new B 33 pedestrian traffic was moved into operation in the village premises - in sight of the older town hall lights.",
+        "There are plants plants so close: intention or coup d coup coup?"
+      ]
+    },
+    "vcycle|m=7|c=3": {
+      "bleu": 21.636073180786347,
+      "bleu_lc": 22.50478482606697,
+      "chrf": 49.3419522432828,
+      "len_ratio": 0.9374968394437421,
+      "bleu_from_stats": 21.636073180786347,
+      "extra_nfe": 12,
+      "seconds": 49.211650099998224,
+      "changed_vs_prev": 0.26473525166511536,
+      "vs_baseline": {
+        "bleu": [
+          -0.09335334159101905,
+          -0.2151882687101663,
+          0.0336058771722362
+        ],
+        "chrf_sentence": [
+          -0.24618617184160355,
+          -0.3603064317418172,
+          -0.13981643349110798
+        ]
+      },
+      "examples": [
+        "Gach: Even more safety for.",
+        "They are not 100 meters away from another another: On Tuesday in the new B 33 pedestrian traffic was moved into operation in the village premises - in sight of the older town hall lights.",
+        "There are power plants so close: intention or coup d coup coup?"
+      ]
+    }
+  },
+  "check": {
+    "docs": 64,
+    "mismatch_cached": 0,
+    "mismatch_uncached": 0
+  },
+  "residual": {
+    "fixed_point_rate": 0.0,
+    "disagree_rate_per_level": {
+      "roundtrip": [
+        0.3383283317089081,
+        0.44330668449401855,
+        0.47627371549606323,
+        0.5277341604232788,
+        0.49925073981285095,
+        0.4961448907852173,
+        0.38226357102394104,
+        0.4680236876010895,
+        0.5126262307167053,
+        0.5386696457862854,
+        0.3805621564388275
+      ],
+      "local": [
+        0.3383283317089081,
+        0.40551114082336426,
+        0.42844656109809875,
+        0.4285476505756378,
+        0.40446218848228455,
+        0.3796460032463074,
+        0.18558524549007416,
+        0.30147355794906616,
+        0.3248765468597412,
+        0.4039056599140167,
+        0.18351440131664276
+      ]
+    },
+    "roundtrip_total": {
+      "spearman_with_quality": -0.06322294136454425,
+      "auroc_worst_decile": 0.5103424066336982
+    },
+    "local_total": {
+      "spearman_with_quality": -0.08191678492392351,
+      "auroc_worst_decile": 0.5283504774364258
+    }
+  },
+  "examples": {
+    "source": [
+      "Gutach: Noch mehr Sicherheit f\u00fcr Fu\u00dfg\u00e4nger",
+      "Sie stehen keine 100 Meter voneinander entfernt: Am Dienstag ist in Gutach die neue B 33-Fu\u00dfg\u00e4ngerampel am Dorfparkplatz in Betrieb genommen worden - in Sichtweite der \u00e4lteren Rathausampel.",
+      "Zwei Anlagen so nah beieinander: Absicht oder Schildb\u00fcrgerstreich?"
+    ],
+    "reference": [
+      "Gutach: Increased safety for pedestrians",
+      "They are not even 100 metres apart: On Tuesday, the new B 33 pedestrian lights in Dorfparkplatz in Gutach became operational - within view of the existing Town Hall traffic lights.",
+      "Two sets of lights so close to one another: intentional or just a silly error?"
+    ]
+  }
+}

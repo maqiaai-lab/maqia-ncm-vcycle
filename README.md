@@ -18,11 +18,12 @@ The full research plan and the lab notebook are in [`PLAN.md`](PLAN.md). The pri
 
 | | Result |
 |---|---|
-| **Text: every released LM1B model** | One V-cycle from level 6 (+6 NFE) lowers generative perplexity on all three sizes (3 seeds × 256 samples each): small 93.8 → **79.9**, medium 89.2 → **68.0**, large 82.2 → **63.9**. Resampling the same levels *without* re-encoding costs the same and gives 93.2 / 86.9 / 79.8, so the re-encode step is what matters (paired ratios **0.857 / 0.783 / 0.801**, all CIs well below 1). |
+| **Text: every released LM1B model** | One V-cycle from level 6 (+6 NFE) lowers generative perplexity on all three sizes: small 93.8 → **79.9**, medium 88.8 → **68.6** (20 seeds), large 82.2 → **63.9** (3 seeds × 256 samples for small and large). Resampling the same levels *without* re-encoding costs the same and gives 93.2 / 88.4 / 79.8, so the re-encode step is what matters (paired ratios **0.857 / 0.776 / 0.801**, all CIs well below 1; better on 20 of 20 medium seeds). Medium plus one V-cycle (+55% compute) beats the 2.3× larger model's single pass (68.6 vs 82.2). |
 | **Text: a second dataset** | TinyStories (3 seeds × 256, the paper's genppl protocol): 16.4 → **13.3**, against 16.5 without re-encoding (ratio **0.809** [0.797, 0.821]). Entropy and per-sample diversity are unchanged. |
-| **Not a GPT-2 artifact** | On LM1B-medium, a scorer from another model family (Qwen2.5-1.5B) shows a larger gain (ratio **0.730** [0.713, 0.747]). One cycle stays above human-text perplexity (68.0 vs 53.5): it repairs without over-smoothing. MAUVE against human text points the same way (0.46 → 0.63, controls 0.45–0.48) but is not significant at 768 samples. |
+| **Not a GPT-2 artifact** | On LM1B-medium (20 seeds, 5,120 samples per variant): a scorer from another model family (Qwen2.5-1.5B) shows a larger gain (ratio **0.724** [0.717, 0.730]); MAUVE against 5,120 human passages rises 0.31 → **0.41** while the control stays at 0.31 (paired half-size subsamples: +0.077 [+0.024, +0.130], ahead in 20 of 20 rounds); and a local LLM judge (Qwen2.5-7B-Instruct, both orders) prefers the V-cycle text in **64%** of pairs against no restriction and **76%** against the single pass (it prefers human text over NCM in 97%). One cycle stays above human-text perplexity (68.6 vs 53.5): it repairs without over-smoothing. |
+| **Prompted tasks: a small polish** | Greedy decoding as released, so no restriction reproduces the single pass exactly and the single pass is the control. **WMT14** (3,003 sentences): +0.3 to +0.55 BLEU from coarse and middle restarts (21.73 → 22.28 after three cycles from level 3); the paper's classifier-free guidance gets +1.3 BLEU for less than half that compute (+11 vs +24 NFE). **XSum** (11,334 articles): ROUGE-1/2/L +0.24 / +0.25 / +0.19 and GPT-2 perplexity −24% after three cycles from level 5; up to 47% of summaries become exact fixed points. The LLM judge calls both a near-tie (mean preference 0.515 and 0.526). Re-encoding must use the canonical output (text, EOS, PAD): the raw ids cost −4.3 BLEU. |
 | **Iterating** | Restarting from level 8 converges like a multigrid cycle: the coarse residual contracts every cycle and medium reaches 65.1 after six cycles, keeping 73% of the draft, with corpus diversity down 6%. Restarting from level 6 keeps drifting: after six cycles the text is unrelated to the draft, diversity is down 13%, and medium's perplexity (51.9) falls *below* human text's (53.5). One cycle is the safe default. |
-| **Residual = free error detector** | NCM samples are **never** fixed points of the tokenizer round trip (0% of 6,000 Sudoku boards and 3,072 texts). The *amount* of disagreement flags wrong Sudoku boards with AUROC **0.92** on hard, beating the decoder's own confidence (0.87), and the worst-perplexity tenth of texts with AUROC 0.64–0.74 on LM1B and **0.81** on TinyStories. As a compute gate on text it helps little: the V-cycle improves nearly every sample. |
+| **Residual = free error detector** | NCM samples are **never** fixed points of the tokenizer round trip (0% of 6,000 Sudoku boards, the LM1B and TinyStories texts, and 14,337 XSum and WMT14 outputs). The *amount* of disagreement flags wrong Sudoku boards with AUROC **0.92** on hard, beating the decoder's own confidence (0.87), and the worst-perplexity tenth of texts with AUROC 0.63–0.74 on LM1B and **0.81** on TinyStories. On the prompted tasks it barely flags the worst outputs (AUROC 0.51–0.63). As a compute gate on text it helps little: the V-cycle improves nearly every sample. |
 | **Reproduction** | Sudoku: 99.4 / 96.4 / **86.3%** solved on easy / medium / hard (paper, hard: 86.1%). LM1B-small: gen. PPL 95.8 / 94.6 / 91.0 over three seeds, H = 4.32 (paper's NCM point: about 92, H = 4.31). |
 | **Sudoku correction** | With the Sudoku checker deciding which boards to retry, V-cycle retries from level 5 beat fresh resampling (best-of-N) by **+1.2 points** at equal compute (90.4% vs 89.3% at 14 NFE; 95% CI [+0.6, +1.7]; 3 seeds × 2,000 hard boards). Most of the gain comes from keeping the coarse levels. Here the re-encode step adds only +0.3 to +0.5 points, with a CI that includes 0. |
 
@@ -43,12 +44,12 @@ The full research plan and the lab notebook are in [`PLAN.md`](PLAN.md). The pri
 
 Paired bootstrap over the 768 samples: V-cycle (m = 6) / no restriction = **0.857 [0.839, 0.876]**; V-cycle / single pass = 0.852 [0.836, 0.868]. Restarting from level 3 has no significant effect (0.985 [0.950, 1.020]).
 
-**The effect holds at every model size and on a second dataset** (3 seeds × 256 samples each; ratios are paired bootstraps over the pooled 768 samples):
+**The effect holds at every model size and on a second dataset** (256 samples per seed: 20 seeds for LM1B-medium, 3 for the others; ratios are paired bootstraps over the pooled samples):
 
 | Model | Single pass | No restriction, m = 6 | **V-cycle, m = 6** | V-cycle / no restriction, m = 6 | V-cycle, m = 8 (ratio) | Corpus distinct-2, single pass → V-cycle m = 6 |
 |---|---|---|---|---|---|---|
 | LM1B-small | 93.8 | 93.2 | **79.9** | **0.857** [0.839, 0.876] | – | 0.505 → 0.477 (seed 42) |
-| LM1B-medium (317M) | 89.2 | 86.9 | **68.0** | **0.783** [0.765, 0.802] | 77.4 (0.871 [0.858, 0.886]) | 0.580 → 0.547 |
+| LM1B-medium (317M; 20 seeds) | 88.8 | 88.4 | **68.6** | **0.776** [0.769, 0.783] | 76.8 (0.866 [0.861, 0.871]) | 0.578 → 0.545 |
 | LM1B-large | 82.2 | 79.8 | **63.9** | **0.801** [0.784, 0.818] | 72.5 (0.888 [0.874, 0.901]) | 0.582 → 0.555 |
 | TinyStories | 16.4 | 16.5 | **13.3** | **0.809** [0.797, 0.821] | 15.0 (0.915 [0.905, 0.924]) | 0.329 → 0.317 |
 
@@ -63,20 +64,27 @@ The sweep below covers seed 42, restart levels m = 4, 6, 8 and 10, and repeated 
 
 ![LM1B: quality vs diversity](results/lm1b_small_ppl_vs_entropy.png)
 
-**Is lower perplexity better text?** (`experiments/lm1b_quality.py`, `experiments/lm1b_mauve.py`; LM1B-medium, 768 samples per variant.) Three checks that do not rely on GPT-2 perplexity:
+**Is lower perplexity better text?** (`experiments/lm1b_quality.py`, `experiments/lm1b_mauve.py`, `experiments/judge.py`; LM1B-medium, 20 seeds, 5,120 samples per variant.) Four checks that do not rely on GPT-2 perplexity:
 
-| Text | GPT-2 gen. PPL | Qwen2.5-1.5B gen. PPL | Qwen ratio vs no restriction | MAUVE vs human text ↑ (full sets) |
+| Text | GPT-2 gen. PPL | Qwen2.5-1.5B gen. PPL | Qwen ratio vs no restriction | MAUVE vs human text ↑ (5,120 vs 5,120) |
 |---|---|---|---|---|
-| Human (held-out LM1B validation) | 53.5 | 40.3 | – | – |
-| NCM single pass | 89.2 | 105.2 | – | 0.458 |
-| No restriction, m = 6 | 86.9 | 102.6 | – | 0.452 |
-| **V-cycle, m = 6** | **68.0** | **74.9** | **0.730** [0.713, 0.747] | **0.626** |
-| No restriction, m = 8 | 88.8 | 104.7 | – | 0.475 |
-| **V-cycle, m = 8** | **77.4** | **87.9** | **0.840** [0.825, 0.854] | **0.612** |
+| Human (held-out LM1B validation) | 53.5 | 40.8 | – | – |
+| NCM single pass | 88.8 | 105.9 | – | 0.312 |
+| No restriction, m = 6 | 88.4 | 105.6 | – | 0.307 |
+| **V-cycle, m = 6** | **68.6** | **76.4** | **0.724** [0.717, 0.730] | **0.410** |
+| No restriction, m = 8 | 88.7 | 106.0 | – | – |
+| **V-cycle, m = 8** | **76.8** | **88.8** | **0.837** [0.832, 0.843] | – |
+
+| LLM judge (Qwen2.5-7B-Instruct, on the GPU box; both orders) | Pairs | Mean preference for A [95% CI] | Share of pairs preferring A |
+|---|---|---|---|
+| Sanity check: human text (A) vs NCM single pass | 5,120 | 0.669 [0.664, 0.674] | 97% |
+| **V-cycle m = 6 (A) vs no restriction m = 6** | 5,120 | **0.589** [0.581, 0.597] | **64%** |
+| **V-cycle m = 6 (A) vs single pass** (the same draft) | 5,120 | **0.633** [0.626, 0.639] | **76%** |
 
 - **A second scorer agrees, more strongly.** Qwen2.5-1.5B is a different model family with a different tokenizer.
-- **MAUVE points the same way, but is not significant.** On the full sets the V-cycle leads no restriction by +0.17 (m = 6). Across 50 rounds of paired half-size subsamples, the lead averages +0.06 with an interval of [−0.10, +0.19]; the V-cycle is ahead in 80% of rounds (66% at m = 8). Resolving it would take several thousand samples per variant. Bootstrapping *with* replacement is not usable here: duplicated points bias MAUVE down, and the intervals excluded their own point estimates.
-- **No over-smoothing after one cycle.** Human text scores 53.5; one V-cycle brings NCM from 89.2 to 68.0, still well above it. Human text is also far more varied across samples (corpus distinct-2 0.718 per 256 chunks, against about 0.58 for NCM), and here the V-cycle moves the wrong way (0.547).
+- **MAUVE agrees, and at 5,120 samples it is significant.** The V-cycle leads no restriction by +0.10 on the full sets. Across 20 rounds of paired half-size subsamples the lead is +0.077 [+0.024, +0.130], positive in every round; no restriction does not move MAUVE at all. With 768 samples the same comparison was not resolvable (+0.06 [−0.10, +0.19]). Bootstrapping *with* replacement is not usable for MAUVE: duplicated points bias it down. Absolute MAUVE falls with the number of samples (more clusters), so only differences compare.
+- **A reader-style judge agrees.** It prefers the V-cycle text over equal-compute resampling in 64% of pairs, and over the unchanged draft in 76%. Its sanity check passes (human text over NCM in 97%). The judge has a strong position bias, in a different direction per task (it picks the second text in 56–82% of LM1B pairs and the first in 72–80% of XSum and WMT14 pairs), which averaging over both orders removes; single verdicts are noisy, the averages over thousands of pairs are not.
+- **No over-smoothing after one cycle.** Human text scores 53.5; one V-cycle brings NCM from 88.8 to 68.6, still well above it, closing about half (51%) of the log-perplexity gap. Human text is also far more varied across samples (corpus distinct-2 0.718 per 256 chunks, against about 0.58 for NCM), and here the V-cycle moves the wrong way (0.545).
 
 **Iterating** (`experiments/lm1b_converge.py`; seed 42, 256 samples, six cycles):
 
@@ -105,8 +113,8 @@ The sweep below covers seed 42, restart levels m = 4, 6, 8 and 10, and repeated 
 
 **Caveats.**
 - Cross-sample diversity drops: corpus distinct-2 falls about 4–6% after one cycle, and more with iteration from level 6. That is less than colder sampling costs, but it moves away from human text, which is more varied than NCM's samples to begin with.
-- Coverage is two unconditional datasets (LM1B at three sizes, TinyStories). OpenWebText has no released checkpoint yet, and the conditional tasks (XSum, WMT14) are untested.
-- There is no human evaluation. Quality evidence is GPT-2 and Qwen perplexity, with MAUVE only directional.
+- Coverage is two unconditional datasets (LM1B at three sizes, TinyStories) and two prompted tasks (section 4). OpenWebText has no released checkpoint yet.
+- There is no human evaluation. Quality evidence is two perplexity scorers, MAUVE and one 7B LLM judge with a strong position bias.
 
 ### 2. The round-trip residual is a training-free error detector
 
@@ -155,6 +163,30 @@ A sample is a *fixed point* if `encode(decode(r)) == r`. The plan's yes/no test 
   - Cycling only the 20% of boards with the highest residual keeps most of the gain (85.1%) at a fifth of the compute, with no checker at all.
   - With a checker available, stochastic retries (table above) are far stronger.
 
+### 4. Prompted tasks (XSum, WMT14): a small polish
+
+**Setup** (`experiments/cond_vcycle.py`):
+- Sampling and metrics are exactly those of NCM's evaluation scripts: the source is the prompt, the levels are decoded **greedily** (both released configs set `top_k: 1`), and outputs are scored with ROUGE-1/2/L plus GPT-2 perplexity (XSum) or sacreBLEU and chrF (WMT14). Our decoder matches `generate()` code for code on both (64 test prompts each), with and without a new pad-aware prompt cache.
+- Under greedy decoding, regenerating from the *generated* coarse codes reproduces the single pass exactly (checked: 100% of documents), so the single pass is the equal-compute control.
+- **The restriction re-encodes the output in canonical form: text, EOS, then PAD.** After the first EOS the picked ids are decoder noise. In a round-trip test on 48 outputs, the frozen tokenizer reproduces 92% of WMT14 outputs exactly from the canonical form and 40% from the raw ids. On WMT14, re-encoding the raw ids costs −4.28 BLEU [−4.77, −3.81] and makes translations 12% longer (length ratio 0.94 → 1.05). On XSum, where the round trip is 79% for both forms, it costs little (one cycle: R-2 +0.13 instead of +0.18), as the test predicted.
+
+| WMT14 de→en, 3,003 sentences (single pass BLEU 21.73) | Δ BLEU after 1 / 2 / 3 cycles [95% CI] | Sentences fixed after 3 cycles |
+|---|---|---|
+| Restart from level 3 (+8 NFE per cycle) | +0.32 [+0.05, +0.59] / +0.49 [+0.21, +0.77] / **+0.55** [+0.25, +0.83] | 33% |
+| Restart from level 5 (+6) | +0.29 [+0.10, +0.50] / +0.23 [+0.02, +0.45] / +0.27 [+0.05, +0.51] | 41% |
+| Restart from level 7 (+4) | −0.09 [−0.21, +0.01] / −0.04 / −0.09 (sentence chrF significantly lower) | 74% |
+
+| XSum, 11,334 articles (single pass R-1/R-2/R-L 34.92/12.71/27.93, GPT-2 PPL 82.6) | Δ R-1 / R-2 / R-L after 3 cycles [all CIs above 0] | GPT-2 PPL | Summaries fixed after 3 cycles |
+|---|---|---|---|
+| Restart from level 5 (+4 NFE per cycle) | **+0.24 / +0.25 / +0.19** (one cycle: +0.19 / +0.18 / +0.15) | 62.5 (×0.76; one cycle ×0.83) | 47% |
+| Restart from level 3 (+6) | +0.13 / +0.20 / +0.11 | 64.1 (×0.78) | 22% |
+
+- **Content kept, fluency polished.** Summary length is unchanged (20.7 words) and the reference scores rise slightly, while perplexity falls about as much as on free-running text.
+- **The iteration converges here.** Greedy decoding makes a cycle a deterministic map, so outputs can reach exact fixed points: 47% of XSum summaries are unchanged by the third cycle from level 5. On free-running text, where the levels are sampled, the gains shrink per cycle instead.
+- **Readers barely notice.** The LLM judge calls both tasks a near-tie for one cycle from level 5: mean preference for the V-cycle 0.526 [0.516, 0.535] on 2,000 XSum articles and 0.515 [0.506, 0.525] on all WMT14 sentences, while the share of single pairs preferring it is 44% on both.
+- **Other levers are bigger.** On WMT14, the paper's own classifier-free guidance gives +1.3 BLEU for +11 NFE (its Table 2, lowercased BLEU), more than the V-cycle's +0.56 lowercased (+0.55 cased) for +24 NFE.
+- **The residual is no error detector here** (worst-decile AUROC 0.51–0.53 on WMT14, 0.60–0.63 on XSum): when the prompt fixes the content, a bad output is mostly a wrong content choice.
+
 ### What changed from the plan
 
 - **V1 as written is a guaranteed no-op under greedy decoding.** With τ = 0, the levels below j agree, so the same context resamples the same codes. We added *V1-accept*, which also keeps the re-encoded level j.
@@ -164,11 +196,11 @@ A sample is a *fixed point* if `encode(decode(r)) == r`. The plan's yes/no test 
 
 ### Suggested next steps
 
-- **Conditional tasks.** WMT14 and XSum, where the prompt pins content and the V-cycle's "keep content, fix fluency" behavior should matter most. XSum works with the current decoder (prompt cache off); WMT14 needs the `predict_level0` branch of `generate()`.
-- **A preference check, and MAUVE at scale.** Human or LLM-judge pairwise preference, V-cycle vs no restriction on the same draft; and MAUVE on several thousand samples per variant (about 20 seeds, roughly two hours on one laptop GPU), where its difference could be resolved.
-- **OpenWebText**, once its checkpoint is released (it needs `query_level0: false`, which `LevelDecoder` now supports).
-- **Choosing when to stop iterating.** Restarting from level 8 converges and from level 6 drifts; a stopping rule based on the contraction of the coarse residual is untested.
-- **Training-side follow-up for the NCM authors.** Teacher-force on the generator's own re-encoded codes, so its coarse levels land on the encoder's manifold in the first place.
+- **Human preference check** on free-running text, V-cycle vs equal-compute resampling: the LLM judge's 64% is the weakest link in the quality evidence.
+- **Classifier-free guidance plus a V-cycle** on WMT14 and XSum, and minimum-Bayes-risk decoding at equal compute: are the gains additive, or does CFG already capture them?
+- **Choosing when to stop iterating:** restarting from a finer level converges and from a coarse one drifts on free-running text; a stopping rule based on the contraction of the coarse residual is untested.
+- **OpenWebText**, once its checkpoint is released (it needs `query_level0: false`, which `LevelDecoder` supports).
+- **Training-side follow-up for the NCM authors:** teacher-force on the generator's own re-encoded codes, so its coarse levels land on the encoder's manifold in the first place.
 
 ## How the pieces map
 
@@ -194,7 +226,11 @@ python experiments/lm1b_converge.py --size medium --seed 42 --cycles 6:6,8:6   #
 python experiments/lm1b_diagnostic.py --task tinystories --n 256 --seed 42 --vcycle 6,8   # checkpoint tinystories/*
 hf download hazyresearch/ncm-datasets --repo-type dataset lm1b/valid_bert_30522.bin lm1b/valid_bert_30522_offsets.npy --local-dir data
 python experiments/lm1b_quality.py --size medium --variants "baseline,vcycle|m=6,no-restrict|m=6,vcycle|m=8,no-restrict|m=8"
-python experiments/lm1b_mauve.py --size medium --boot 50   # MAUVE with paired half-size subsampling
+python experiments/lm1b_mauve.py --size medium --boot 20   # MAUVE with paired half-size subsampling
+hf download hazyresearch/ncm-checkpoints xsum/generator.pt xsum/tokenizer.pt xsum/config.yaml wmt14/generator.pt wmt14/tokenizer.pt wmt14/config.yaml --local-dir artifacts
+python experiments/cond_vcycle.py --task xsum --levels 3,5 --cycles 3     # also --task wmt14 --levels 3,5,7; --raw_restrict for the ablation
+python experiments/judge.py --task lm1b --size medium --a "vcycle|m=6" --b "no-restrict|m=6"   # needs a >= 16 GB GPU
+bash experiments/box/queue.sh                                             # everything above, resumable, on a rented GPU (see experiments/box/)
 python experiments/analyze.py       # writes results/SUMMARY.md, results/summary.json and the charts
 ```
 
@@ -220,4 +256,7 @@ python experiments/analyze.py       # writes results/SUMMARY.md, results/summary
 | `experiments/lm1b_converge.py` | iterated V-cycles: quality, diversity, residual contraction and drift after every cycle |
 | `experiments/lm1b_quality.py` | human-text anchor, second-scorer perplexity, MAUVE |
 | `experiments/lm1b_mauve.py` | MAUVE with uncertainty from paired half-size subsampling |
+| `vcycle/cond.py`, `experiments/cond_vcycle.py` | prompted tasks (XSum, WMT14): released sampling and metrics, canonical re-encoding, iterated greedy V-cycles, paired bootstraps |
+| `experiments/judge.py` | pairwise LLM judge, run locally; both orders, next-token probabilities |
+| `experiments/box/` | rented-GPU tooling: setup, resumable two-lane queue with a hard shutdown, judge-only scripts, SSH push and pull |
 | `experiments/analyze.py` | tables, paired-bootstrap intervals and the charts |

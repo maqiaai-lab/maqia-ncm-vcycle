@@ -32,6 +32,7 @@ ap.add_argument("--variants", default="baseline,vcycle|m=6,no-restrict|m=6")
 ap.add_argument("--ref", default="openai-community/gpt2-large")
 ap.add_argument("--ref2", default="Qwen/Qwen2.5-1.5B")
 ap.add_argument("--n_boot", type=int, default=1000)
+ap.add_argument("--no_mauve", action="store_true", help="skip MAUVE (lm1b_mauve.py measures it with uncertainty)")
 a = ap.parse_args()
 
 torch.set_grad_enabled(False)
@@ -98,20 +99,21 @@ def features(ids, bs=16):
 
 if lm.offload:
     ncm.net.cpu()
-import mauve  # noqa: E402
+if not a.no_mauve:
+    import mauve  # noqa: E402
 
-with Timer() as t:
-    hf = {s: features(human_by_seed[s]) for s in seeds}
-    out["mauve"] = {}
-    for v in variants:
-        vf = {s: features(runs[s][v]) for s in seeds}
-        per = [float(mauve.compute_mauve(p_features=hf[s], q_features=vf[s], verbose=False, seed=25).mauve) for s in seeds]
-        pooled = float(mauve.compute_mauve(p_features=np.concatenate([hf[s] for s in seeds]),
-                                           q_features=np.concatenate([vf[s] for s in seeds]), verbose=False, seed=25).mauve)
-        out["mauve"][v] = {"per_seed": per, "pooled": pooled}
-        print(f"MAUVE {v:18s} per seed {[round(x, 3) for x in per]} pooled {pooled:.3f}", flush=True)
-out["seconds_mauve"] = t.s
-save_json(out, f"lm1b_quality_{a.size}.json")
+    with Timer() as t:
+        hf = {s: features(human_by_seed[s]) for s in seeds}
+        out["mauve"] = {}
+        for v in variants:
+            vf = {s: features(runs[s][v]) for s in seeds}
+            per = [float(mauve.compute_mauve(p_features=hf[s], q_features=vf[s], verbose=False, seed=25).mauve) for s in seeds]
+            pooled = float(mauve.compute_mauve(p_features=np.concatenate([hf[s] for s in seeds]),
+                                               q_features=np.concatenate([vf[s] for s in seeds]), verbose=False, seed=25).mauve)
+            out["mauve"][v] = {"per_seed": per, "pooled": pooled}
+            print(f"MAUVE {v:18s} per seed {[round(x, 3) for x in per]} pooled {pooled:.3f}", flush=True)
+    out["seconds_mauve"] = t.s
+    save_json(out, f"lm1b_quality_{a.size}.json")
 
 # 3. Gen. PPL under a second reference LM.
 from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: E402

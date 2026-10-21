@@ -1,0 +1,21 @@
+{
+  "task": "wmt14",
+  "size": null,
+  "a": "vcycle|m=5|c=1",
+  "b": "baseline",
+  "judge": "Qwen/Qwen2.5-7B-Instruct",
+  "items": 3003,
+  "mean_preference_for_a": [
+    0.5152944051655494,
+    0.5058846596760856,
+    0.5252465930988678
+  ],
+  "share_preferring_a": [
+    0.4405594405594406,
+    0.42357642357642356,
+    0.4598734598734599
+  ],
+  "order_agreement": 0.3333333333333333,
+  "letter_a_share": 0.7159994369973307,
+  "seconds": 312.89376116999983
+}

@@ -1,0 +1,21 @@
+{
+  "task": "xsum",
+  "size": null,
+  "a": "vcycle|m=5|c=1",
+  "b": "baseline",
+  "judge": "Qwen/Qwen2.5-7B-Instruct",
+  "items": 2000,
+  "mean_preference_for_a": [
+    0.5255811611621298,
+    0.5156944709242154,
+    0.5354291689455114
+  ],
+  "share_preferring_a": [
+    0.44,
+    0.4175,
+    0.462
+  ],
+  "order_agreement": 0.2295,
+  "letter_a_share": 0.7983595674841322,
+  "seconds": 526.6706638979999
+}

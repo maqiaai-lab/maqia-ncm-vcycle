@@ -1,0 +1,8 @@
+W1021 19:54:01.596000 19400 .venv\Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights:  16%|#5        | 23/148 [00:00<00:00, 200.85it/s]Loading weights:  47%|####6     | 69/148 [00:00<00:00, 243.57it/s]Loading weights: 100%|##########| 148/148 [00:00<00:00, 486.32it/s]
+vcycle|m=3|c=1         {'rouge1': 35.048, 'rouge2': 12.902, 'rougeL': 28.052, 'gen_ppl': 70.201, 'words': 20.698, 'seconds': 435.016, 'changed_vs_prev': 1.0}
+vcycle|m=3|c=2         {'rouge1': 35.113, 'rouge2': 12.935, 'rougeL': 28.068, 'gen_ppl': 66.667, 'words': 20.704, 'seconds': 451.539, 'changed_vs_prev': 0.92}
+vcycle|m=3|c=3         {'rouge1': 35.05, 'rouge2': 12.911, 'rougeL': 28.032, 'gen_ppl': 64.119, 'words': 20.706, 'seconds': 449.509, 'changed_vs_prev': 0.777}
+vcycle|m=5|c=1         {'rouge1': 35.111, 'rouge2': 12.887, 'rougeL': 28.074, 'gen_ppl': 68.396, 'words': 20.732, 'seconds': 414.407, 'changed_vs_prev': 1.0}
+vcycle|m=5|c=2         {'rouge1': 35.157, 'rouge2': 12.936, 'rougeL': 28.099, 'gen_ppl': 64.393, 'words': 20.745, 'seconds': 416.011, 'changed_vs_prev': 0.806}
+vcycle|m=5|c=3         {'rouge1': 35.166, 'rouge2': 12.959, 'rougeL': 28.113, 'gen_ppl': 62.49, 'words': 20.748, 'seconds': 420.318, 'changed_vs_prev': 0.532}

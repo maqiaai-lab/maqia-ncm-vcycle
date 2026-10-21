@@ -647,7 +647,8 @@ for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_quality_*.json"))):
     lines.append(f"| human | {qj['human']['gen_ppl']:.1f} | {qj['ref2_ppl']['human']:.1f} | – | – | – |")
     for v in qj["variants"]:
         r2 = qj["ref2_ratios"].get(f"{v} / {v.replace('vcycle', 'no-restrict')}") if v.startswith("vcycle") else None
-        mcell = f"{(mj['point'][v] if mj else qj['mauve'][v]['pooled']):.3f}"
+        mval = mj["point"].get(v) if mj else qj.get("mauve", {}).get(v, {}).get("pooled")
+        mcell = f"{mval:.3f}" if mval is not None else "–"
         pd = mj["paired"].get(f"{v} - {v.replace('vcycle', 'no-restrict')}") if mj and v.startswith("vcycle") else None
         lines.append(f"| {show(v)} | {gpt2.get(v, float('nan')):.1f} | {qj['ref2_ppl'][v]['pooled']:.1f} | "
                      f"{f'{r2[0]:.3f} [{r2[1]:.3f}, {r2[2]:.3f}]' if r2 else '–'} | {mcell} | "
@@ -656,6 +657,79 @@ for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_quality_*.json"))):
     lines += ["", f"Human cross-sample diversity: corpus distinct-2 {qj['human']['corpus_distinct2_per_seed_block'][0]:.3f} per "
               f"{qj['n_per_seed']} chunks (samples: see the table above, per seed); entropy {qj['human']['entropy']:.3f}.", ""]
     summary[f"lm1b_quality_{size}"] = {"quality": qj, "mauve": mj}
+
+# ---- Prompted tasks: XSum and WMT14 (cond_vcycle.py) ----------------------------------------------
+fmt_ci = lambda r, d=2, sign=True: (f"{r[0]:+.{d}f} [{r[1]:+.{d}f}, {r[2]:+.{d}f}]" if sign else
+                                    f"{r[0]:.{d}f} [{r[1]:.{d}f}, {r[2]:.{d}f}]") if r else "–"
+for task_ in ("xsum", "wmt14"):
+    cj = load(f"{task_}_vcycle.json")
+    if not cj or "baseline" not in cj.get("variants", {}):
+        continue
+    rawj = load(f"{task_}_vcycle_raw.json")
+    V = cj["variants"]
+    samp = cj["sampling"]
+    title = {"xsum": "XSum (summaries)", "wmt14": "WMT14 German → English"}[task_]
+    lines += [f"## {title}: V-cycles on the released greedy decoding ({cj['n']} documents)", "",
+              f"Single pass exactly as the released evaluation (levels sampled with temperature {samp['temperature']:g}, "
+              f"top_k {samp['top_k']}: greedy). V-cycle from level m: re-encode the output ({cj.get('restriction', '')}), keep "
+              f"the encoder's levels < m, regenerate levels m..{cj['K'] - 1} greedily with the same prompt. Without "
+              "re-encoding, the same regeneration reproduces the single pass exactly (checked below), so the single pass is "
+              "the equal-compute control. Differences: paired bootstrap over documents. *Changed*: share of documents whose "
+              f"output differs from the previous cycle's (1 − fixed-point rate). Decoder vs generate(): "
+              f"{cj['check']['mismatch_cached']}/{cj['check']['docs']} differ with the prompt cache, "
+              f"{cj['check']['mismatch_uncached']}/{cj['check']['docs']} without.", ""]
+    rows = [("baseline", V["baseline"])] + [(k, v) for k, v in V.items() if k != "baseline"]
+    if rawj and "vcycle|m=5|c=1" in rawj.get("variants", {}):
+        rows.append(("vcycle|m=5|c=1 (raw re-encoding)", rawj["variants"]["vcycle|m=5|c=1"]))
+    if task_ == "xsum":
+        lines += ["| Variant | Extra NFE | R-1 | R-2 | R-L | Δ R-1 [95% CI] | Δ R-2 | Δ R-L | Gen. PPL (GPT-2) | PPL ratio [95% CI] | Words | Changed |",
+                  "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+        for k, r in rows:
+            if "identical_to_single_pass" in r:
+                lines.append(f"| {show(k)} | +{r['extra_nfe']} | identical to the single pass on {100 * r['identical_to_single_pass']:.1f}% of documents ||||||||||")
+                continue
+            d = r.get("vs_baseline", {})
+            lines.append(f"| {show(k)} | +{r['extra_nfe']} | {r['rouge1']:.2f} | {r['rouge2']:.2f} | {r['rougeL']:.2f} | "
+                         f"{fmt_ci(d.get('rouge1'))} | {fmt_ci(d.get('rouge2'))} | {fmt_ci(d.get('rougeL'))} | {r['gen_ppl']:.1f} | "
+                         f"{fmt_ci(d.get('gen_ppl_ratio'), 3, False)} | {r['words']:.1f} | "
+                         f"{pct(r.get('changed_vs_prev')) + '%' if r.get('changed_vs_prev') is not None else '–'} |")
+    else:
+        lines += ["| Variant | Extra NFE | BLEU | Δ BLEU [95% CI] | BLEU (lc) | chrF | Δ sentence chrF [95% CI] | Length ratio | Changed |",
+                  "|---|---|---|---|---|---|---|---|---|"]
+        for k, r in rows:
+            if "identical_to_single_pass" in r:
+                lines.append(f"| {show(k)} | +{r['extra_nfe']} | identical to the single pass on {100 * r['identical_to_single_pass']:.1f}% of documents |||||||")
+                continue
+            d = r.get("vs_baseline", {})
+            lines.append(f"| {show(k)} | +{r['extra_nfe']} | {r['bleu']:.2f} | {fmt_ci(d.get('bleu'))} | {r['bleu_lc']:.2f} | "
+                         f"{r['chrf']:.2f} | {fmt_ci(d.get('chrf_sentence'))} | {r['len_ratio']:.3f} | "
+                         f"{pct(r.get('changed_vs_prev')) + '%' if r.get('changed_vs_prev') is not None else '–'} |")
+    rs = cj.get("residual")
+    if rs:
+        lines += ["", f"Residual of the single pass: fixed-point rate {rs['fixed_point_rate']:.3f}; flagging the worst tenth of "
+                  f"documents ({'ROUGE-L' if task_ == 'xsum' else 'sentence chrF'}): AUROC {rs['roundtrip_total']['auroc_worst_decile']:.3f} "
+                  f"(round trip), {rs['local_total']['auroc_worst_decile']:.3f} (level-local)."]
+    lines.append("")
+    summary[f"{task_}_vcycle"] = {"main": cj, "raw": rawj}
+
+# ---- LLM judge (judge.py) ---------------------------------------------------------------------------
+jfiles = sorted(p_ for p_ in glob.glob(os.path.join(RESULTS, "judge_*.json")) if "_smoke" not in p_)
+if jfiles:
+    lines += ["## Pairwise preference by a local LLM judge", "",
+              "Each item pairs two texts made from the same single-pass sample (LM1B) or for the same source (XSum, WMT14). "
+              "The judge sees both orders; an item's preference for A is the mean over the orders of P(A's letter) / "
+              "(P(A) + P(B)) from its next-token probabilities. CIs: bootstrap over items. *Order agreement*: share of items "
+              "on which the judge picks the same text in both orders.", "",
+              "| Task | A | B | Items | Mean preference for A [95% CI] | Share preferring A [95% CI] | Order agreement | Judge |",
+              "|---|---|---|---|---|---|---|---|"]
+    for p_ in jfiles:
+        j = json.load(open(p_))
+        task_name = f"LM1B-{j['size']}" if j["task"] == "lm1b" else {"xsum": "XSum", "wmt14": "WMT14"}.get(j["task"], j["task"])
+        lines.append(f"| {task_name} | {show(j['a'])} | {show(j['b'])} | {j['items']} | "
+                     f"{fmt_ci(j['mean_preference_for_a'], 3, False)} | {fmt_ci(j['share_preferring_a'], 3, False)} | "
+                     f"{100 * j['order_agreement']:.0f}% | {j['judge'].split('/')[-1]} |")
+        summary[os.path.basename(p_)[:-5]] = j
+    lines.append("")
 
 with open(os.path.join(RESULTS, "SUMMARY.md"), "w", encoding="utf-8") as f:
     f.write("# Results summary (generated by experiments/analyze.py)\n\n" + "\n".join(lines) + "\n")

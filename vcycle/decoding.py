@@ -7,28 +7,31 @@ with codes independent within a level, and the frozen decoder maps z_hat^(K) to 
 `LevelDecoder.logits` reproduces one step of NextConceptTransformer.generate exactly
 (checked against it in experiments/phase0_baseline.py), so everything built from it
 (starting mid-hierarchy, masked resampling, re-encoding) reuses the released weights unchanged.
-Supported configs: no CFG, no context encoder, and either query_level0 (level 0 from the learned queries, or
-given) or a level 0 that is always given (query_level0 false, as in TinyStories and OWT: level 0 is drawn from
-the released unigram). Without query_level0 the generator has no level-0 head: target positions start at
-level 1 and heads, RoPE buffers and the post-upsample convs are indexed by k - 1, exactly as in generate().
+Supported configs: no CFG, no context encoder, and level 0 either from the learned queries (query_level0:
+Sudoku, LM1B, XSum), given (TinyStories and OWT draw it from the released unigram), or predicted from the
+prompt (predict_level0: WMT14). Without query_level0 the generator has no level-0 query head: target
+positions start at level 1 and heads, RoPE buffers and the post-upsample convs are indexed by k - 1, exactly as
+in generate().
 """
 import torch
 import torch.nn.functional as F
 
 
 class Prefix:
-    """Embedded prompt, its pad-attention bias and (optionally) its per-layer keys/values.
+    """Embedded prompt, its pad mask and attention bias, and (optionally) its per-layer keys/values and final
+    hidden states.
 
     The prompt only attends to itself, so its keys/values are the same at every level and every
     V-cycle; caching them skips recomputing the prompt at each level. Slicing keeps all aligned.
     """
 
-    def __init__(self, emb, bias=None, kv=None):
-        self.emb, self.bias, self.kv = emb, bias, kv
+    def __init__(self, emb, bias=None, kv=None, pad=None, h=None):
+        self.emb, self.bias, self.kv, self.pad, self.h = emb, bias, kv, pad, h
 
     def __getitem__(self, idx):
-        return Prefix(self.emb[idx], None if self.bias is None else self.bias[idx],
-                      None if self.kv is None else [(k[idx], v[idx]) for k, v in self.kv])
+        opt = lambda t: None if t is None else t[idx]
+        return Prefix(self.emb[idx], opt(self.bias), None if self.kv is None else [(k[idx], v[idx]) for k, v in self.kv],
+                      opt(self.pad), opt(self.h))
 
     @property
     def shape(self):
@@ -36,9 +39,12 @@ class Prefix:
 
 
 class LevelDecoder:
-    def __init__(self, ncm, cache_prefix=True):
+    def __init__(self, ncm, cache_prefix=True, cache_padded=False):
+        """cache_prefix: cache the prompt's keys/values. A padded prompt (prefix_pad_token_id) is cached only with
+        cache_padded=True, which adds the pad bias to the cached attention masks; the LM1B and TinyStories
+        results were produced without it (uncached), and it is checked against generate() where it is used."""
         self.ncm = ncm
-        self.cache_prefix = cache_prefix
+        self.cache_prefix, self.cache_padded = cache_prefix, cache_padded
         self.net, self.vqvae, self.vq = ncm.net, ncm.vqvae, ncm.vqvae.vq
         self.levels = list(self.vq.levels)
         self.K = len(self.levels)
@@ -66,25 +72,31 @@ class LevelDecoder:
         e = net.transformer.wte(z)
         if not net.use_rope:
             e = e + net.wpe(net.wp_prefix)
-        bias = None
+        bias = pm = None
         if net.prefix_pad_id is not None:
             pm = prefix_tokens[:, :P] == net.prefix_pad_id
             bias = torch.where(pm[:, None, None, :], float("-inf"), 0.0).to(e.dtype)
-        kv = self._prefix_kv(e) if self.cache_prefix and bias is None else None
-        return Prefix(e, bias, kv)
+        kv = h = None
+        if self.cache_prefix and (bias is None or self.cache_padded):
+            kv, h = self._prefix_kv(e, bias)
+        return Prefix(e, bias, kv, pm, h)
 
     @torch.no_grad()
-    def _prefix_kv(self, pe):
+    def _prefix_kv(self, pe, bias=None):
+        """The prompt's per-layer keys/values and final hidden states (the prompt attends only to its own
+        non-pad positions, as in generate())."""
         net, P = self.net, self.net.prefix_len
         rope = (net.rope_cos_gen_0, net.rope_sin_gen_0) if net.use_rope else None
         mask = torch.zeros(1, 1, P, P, device=pe.device)
+        if bias is not None:
+            mask = mask + bias
         h, kv = pe, []
         for block in net.transformer.blocks:
             block.attn.kv_caching(True)
             h = block(h, attn_mask=mask, rope_cos_sin=rope)
             kv.append((block.attn.cached_k, block.attn.cached_v))
             block.attn.kv_caching(False)
-        return kv
+        return kv, h
 
     @torch.no_grad()
     def _cached_forward(self, x, prefix, k):
@@ -92,6 +104,8 @@ class LevelDecoder:
         net, P, l = self.net, self.net.prefix_len, x.shape[1]
         rope = (getattr(net, f"rope_cos_gen_{k}"), getattr(net, f"rope_sin_gen_{k}")) if net.use_rope else None
         mask = torch.zeros(1, 1, l, P + l, device=x.device)
+        if prefix.bias is not None:
+            mask = mask + F.pad(prefix.bias, (0, l))
         for block, (pk, pv) in zip(net.transformer.blocks, prefix.kv):
             block.attn.kv_caching(True)
             block.attn.cached_k, block.attn.cached_v = pk, pv
@@ -118,10 +132,12 @@ class LevelDecoder:
         B, dev = pe.shape[0], pe.device
         lpe = self._level_pos(dev)
         a, l = self.offsets[k], self.levels[k]
-        h = k - self.lvl_first  # head / RoPE / conv index
+        hi = k - self.lvl_first  # head / RoPE / conv index
         self.nfe += 1
+        if k == 0 and self.lvl_first == 1:
+            assert net.predict_level0, "this model has no level-0 head: pass level 0 in codes and start at 1"
+            return self._level0_logits(prefix)
         if k == 0:
-            assert self.lvl_first == 0, "this model has no level-0 head: pass level 0 in codes and start at 1"
             q = net.build_l0_query_input(B, pe.dtype)
             if net.use_post_upsample_conv:
                 q = net._apply_post_upsample_conv_single(q, 0)
@@ -140,11 +156,26 @@ class LevelDecoder:
             return net.lm_heads[0](h[:, P:, :])
         x = F.interpolate(z_hat.transpose(-1, -2), size=(l,), mode="area").transpose(-1, -2)
         if net.use_post_upsample_conv:
-            x = net._apply_post_upsample_conv_single(x, h)
+            x = net._apply_post_upsample_conv_single(x, hi)
         x = net.transformer.wte(x) + lpe[:, a:a + l]
         if prefix.kv is not None:
-            return self._cached_forward(x, prefix, h)
-        return net._decode_level_logits(x, pe, k - 1, prefix.bias, hidx=h)
+            return self._cached_forward(x, prefix, hi)
+        return net._decode_level_logits(x, pe, k - 1, prefix.bias, hidx=hi)
+
+    @torch.no_grad()
+    def _level0_logits(self, prefix):
+        """predict_level0 (WMT14): level 0 is read off the prompt's last non-pad positions, as in generate()."""
+        net, P = self.net, self.net.prefix_len
+        h = prefix.h
+        if h is None:
+            rope = (net.rope_cos_gen_0, net.rope_sin_gen_0) if net.use_rope else None
+            mask = torch.zeros(1, 1, P, P, device=prefix.emb.device)
+            if prefix.bias is not None:
+                mask = mask + prefix.bias
+            h = prefix.emb
+            for block in net.transformer.blocks:
+                h = block(h, attn_mask=mask, rope_cos_sin=rope)
+        return net.lm_head_l0(net._level0_slice(net.transformer.ln_f(h), prefix.pad))
 
     @torch.no_grad()
     def sample(self, logits, temperature=0.0, top_k=0, top_p=1.0):

@@ -171,35 +171,35 @@ Examples (seed 0, first 3 samples; same starting sample in each row, text trunca
 - *vcycle m=6*: /  it up.  /  in other words, two years ago, it was all good my money got his second step off, but he was going to me back get into the business.  /  united nations sanctions : the world ' s top climate official says, she is convinced the baltic states would not extend any international action again
 - *no-restrict m=6*: / sed up ( in other words, 25 years ago i was president and my old nurse got the money off her, and hand it  /  over $ 100 a month.  /  washington - based with climate change. barack clinton ' s climate alliance adviser says she does believe that the united states would not make this decision but an
 
-## LM1B-medium: residual diagnostic and V-cycle (3 seeds × 256 samples)
+## LM1B-medium: residual diagnostic and V-cycle (20 seeds × 256 samples)
 
 Gen. PPL is corpus-level under GPT-2 large (FLM protocol, as in the paper); entropy is the mean per-sample unigram entropy of the raw ids. V-cycle and no-restriction resample levels m..K-1 once, at T=1, from the same baseline samples, so they cost the same (K-m extra NFE).
 
 | Variant | Extra NFE | Gen. PPL (per seed) | Gen. PPL mean | Entropy | Adjacent repeats | distinct-2 | [PAD] fraction |
 |---|---|---|---|---|---|---|---|
-| baseline | 0 | 87.1, 89.9, 90.7 | 89.2 | 4.343 | 0.32% | 0.958 | 0.0% |
-| vcycle m=6 | 6 | 65.9, 68.5, 69.6 | 68.0 | 4.344 | 0.31% | 0.958 | 0.0% |
-| no-restrict m=6 | 6 | 86.9, 86.3, 87.5 | 86.9 | 4.338 | 0.33% | 0.959 | 0.0% |
-| vcycle m=8 | 4 | 75.5, 77.7, 78.9 | 77.4 | 4.348 | 0.27% | 0.959 | 0.0% |
-| no-restrict m=8 | 4 | 87.0, 89.9, 89.4 | 88.8 | 4.340 | 0.30% | 0.959 | 0.0% |
+| baseline | 0 | 87.1, 89.9, 91.6, 89.0, 89.2, 88.8, 90.7, 89.8, 88.9, 87.3, 89.2, 88.1, 83.9, 88.9, 90.7, 89.2, 87.8, 90.3, 87.2, 88.5 | 88.8 | 4.341 | 0.32% | 0.958 | 0.0% |
+| vcycle m=6 | 6 | 65.9, 68.5, 71.0, 67.4, 69.0, 68.7, 69.8, 68.5, 70.0, 68.7, 68.7, 67.8, 66.8, 68.9, 69.6, 67.6, 68.9, 67.4, 69.8, 68.9 | 68.6 | 4.342 | 0.31% | 0.958 | 0.0% |
+| no-restrict m=6 | 6 | 86.9, 86.3, 91.3, 88.2, 88.5, 88.4, 86.9, 90.0, 89.1, 87.6, 90.5, 86.7, 86.4, 88.8, 87.5, 90.3, 84.9, 91.4, 90.0, 88.2 | 88.4 | 4.340 | 0.33% | 0.958 | 0.0% |
+| vcycle m=8 | 4 | 75.5, 77.7, 79.5, 76.8, 76.3, 77.6, 78.5, 77.6, 76.8, 75.4, 77.0, 76.4, 73.1, 76.2, 78.9, 77.3, 75.4, 78.3, 75.8, 76.2 | 76.8 | 4.345 | 0.29% | 0.958 | 0.0% |
+| no-restrict m=8 | 4 | 87.0, 89.9, 90.7, 90.2, 88.4, 88.4, 88.8, 90.0, 89.3, 87.0, 89.9, 88.1, 83.4, 90.1, 89.4, 89.7, 85.7, 89.1, 88.1, 90.8 | 88.7 | 4.340 | 0.32% | 0.958 | 0.0% |
 
 Paired bootstrap over samples (seeds pooled): corpus gen. PPL ratio A / B, mean [95% CI]:
 
 | A / B | Ratio |
 |---|---|
-| vcycle m=6 / baseline | 0.762 [0.749, 0.776] |
-| no-restrict m=6 / baseline | 0.974 [0.951, 0.996] |
-| vcycle m=8 / baseline | 0.867 [0.859, 0.875] |
-| no-restrict m=8 / baseline | 0.995 [0.978, 1.012] |
-| vcycle m=6 / no-restrict m=6 | 0.783 [0.765, 0.802] |
-| vcycle m=8 / no-restrict m=8 | 0.871 [0.858, 0.886] |
+| vcycle m=6 / baseline | 0.773 [0.767, 0.778] |
+| no-restrict m=6 / baseline | 0.996 [0.987, 1.004] |
+| vcycle m=8 / baseline | 0.865 [0.862, 0.868] |
+| no-restrict m=8 / baseline | 0.999 [0.993, 1.005] |
+| vcycle m=6 / no-restrict m=6 | 0.776 [0.769, 0.783] |
+| vcycle m=8 / no-restrict m=8 | 0.866 [0.861, 0.871] |
 
 Residual vs per-sample quality (Spearman ρ, mean over seeds; AUROC for flagging the worst-decile samples):
 
 | Residual | ρ with per-token NLL | ρ with adjacent repeats | ρ with entropy | AUROC worst-NLL decile | AUROC worst-repeat decile |
 |---|---|---|---|---|---|
-| roundtrip_total | +0.095 | +0.051 | +0.014 | 0.591 | 0.546 |
-| local_total | +0.168 | +0.082 | +0.042 | 0.640 | 0.559 |
+| roundtrip_total | +0.112 | +0.053 | +0.007 | 0.587 | 0.534 |
+| local_total | +0.176 | +0.063 | +0.045 | 0.632 | 0.539 |
 
 Fixed-point rate: 0.000.
 
@@ -417,16 +417,16 @@ Only the top-q samples by level-local residual are cycled; extra NFE is the mean
 | 0.3 | +1.8 | 75.0 | 76.2 | 73.3 | 0.985 [0.973, 0.996] | 0.36 / 0.45 |
 | 0.5 | +3.0 | 71.6 | 72.5 | 69.6 | 0.989 [0.977, 1.001] | 0.55 / 0.66 |
 
-## LM1B-medium: residual-gated V-cycle (m = 6; 3 seeds × 256 samples)
+## LM1B-medium: residual-gated V-cycle (m = 6; 20 seeds × 256 samples)
 
-Only the top-q samples by level-local residual are cycled; extra NFE is the mean per sample. Single pass 89.2, every sample cycled 68.0. *Share of gain*: fraction of the log-PPL gain of cycling every sample. Ratio: residual gate / random gate at the same q, paired bootstrap over samples.
+Only the top-q samples by level-local residual are cycled; extra NFE is the mean per sample. Single pass 88.8, every sample cycled 68.6. *Share of gain*: fraction of the log-PPL gain of cycling every sample. Ratio: residual gate / random gate at the same q, paired bootstrap over samples.
 
 | q | Extra NFE | Residual gate | Random gate | Oracle gate (own NLL) | Residual / random [95% CI] | Share of gain: residual / oracle |
 |---|---|---|---|---|---|---|
-| 0.1 | +0.6 | 86.6 | 86.8 | 85.3 | 0.997 [0.988, 1.005] | 0.11 / 0.17 |
-| 0.2 | +1.2 | 83.7 | 84.5 | 81.9 | 0.991 [0.980, 1.002] | 0.23 / 0.32 |
-| 0.3 | +1.8 | 81.2 | 82.2 | 79.3 | 0.987 [0.975, 1.000] | 0.35 / 0.44 |
-| 0.5 | +3.0 | 77.2 | 77.9 | 74.5 | 0.991 [0.977, 1.004] | 0.53 / 0.66 |
+| 0.1 | +0.6 | 86.0 | 86.5 | 84.8 | 0.994 [0.991, 0.997] | 0.12 / 0.18 |
+| 0.2 | +1.2 | 83.5 | 84.3 | 81.8 | 0.990 [0.986, 0.994] | 0.24 / 0.32 |
+| 0.3 | +1.8 | 81.3 | 82.2 | 79.1 | 0.990 [0.985, 0.994] | 0.34 / 0.45 |
+| 0.5 | +3.0 | 77.5 | 78.0 | 74.8 | 0.993 [0.988, 0.997] | 0.53 / 0.66 |
 
 ## LM1B-small: residual-gated V-cycle (m = 6; 3 seeds × 256 samples)
 
@@ -459,18 +459,71 @@ Gating vs a finer restart level (LM1B-small, seed 42): gen. PPL (extra NFE per s
 | 8 | 92.3 (+0.8) | 90.8 (+1.3) | 88.7 (+2.0) | 86.5 (+2.7) | 82.8 (+4.0) |
 | 10 | 93.3 (+0.4) | 92.4 (+0.7) | 90.9 (+1.0) | 90.3 (+1.3) | 88.2 (+2.0) |
 
-## LM1B-medium: quality beyond GPT-2 perplexity (seeds [0, 1, 42], pooled 768 samples)
+## LM1B-medium: quality beyond GPT-2 perplexity (seeds [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 42], pooled 5120 samples)
 
-*Human*: held-out LM1B validation chunks (128 BERT ids, like the samples), scored the same way. Qwen2.5-1.5B: gen. PPL of the text without special tokens, up to 256 tokens. MAUVE: against the same number of human chunks, GPT-2-large features, full sets. Uncertainty from 50 rounds of paired half-size subsamples (without replacement; fresh k-means seed): the last column gives the full-set difference, then the half-size mean difference with its 2.5–97.5 percentiles and the share of rounds the V-cycle is ahead. Half-size MAUVE is not on the full-size scale; only differences compare.
+*Human*: held-out LM1B validation chunks (128 BERT ids, like the samples), scored the same way. Qwen2.5-1.5B: gen. PPL of the text without special tokens, up to 256 tokens. MAUVE: against the same number of human chunks, GPT-2-large features, full sets. Uncertainty from 20 rounds of paired half-size subsamples (without replacement; fresh k-means seed): the last column gives the full-set difference, then the half-size mean difference with its 2.5–97.5 percentiles and the share of rounds the V-cycle is ahead. Half-size MAUVE is not on the full-size scale; only differences compare.
 
 | Text | GPT-2 gen. PPL (FLM) | Qwen2.5-1.5B gen. PPL | Qwen2.5-1.5B ratio vs no-restrict [95% CI] | MAUVE ↑ | MAUVE − no-restrict |
 |---|---|---|---|---|---|
-| human | 53.5 | 40.3 | – | – | – |
-| baseline | 89.2 | 105.2 | – | 0.458 | – |
-| vcycle m=6 | 68.0 | 74.9 | 0.730 [0.713, 0.747] | 0.626 | +0.174; half-size +0.058 [-0.103, +0.189], ahead in 80% |
-| no-restrict m=6 | 86.9 | 102.6 | – | 0.452 | – |
-| vcycle m=8 | 77.4 | 87.9 | 0.840 [0.825, 0.854] | 0.612 | +0.138; half-size +0.037 [-0.147, +0.183], ahead in 66% |
-| no-restrict m=8 | 88.8 | 104.7 | – | 0.475 | – |
+| human | 53.5 | 40.8 | – | – | – |
+| baseline | 88.8 | 105.9 | – | 0.312 | – |
+| vcycle m=6 | 68.6 | 76.4 | 0.724 [0.717, 0.730] | 0.410 | +0.103; half-size +0.077 [+0.024, +0.130], ahead in 100% |
+| no-restrict m=6 | 88.4 | 105.6 | – | 0.307 | – |
+| vcycle m=8 | 76.8 | 88.8 | 0.837 [0.832, 0.843] | – | – |
+| no-restrict m=8 | 88.7 | 106.0 | – | – | – |
 
-Human cross-sample diversity: corpus distinct-2 0.718 per 256 chunks (samples: see the table above, per seed); entropy 4.311.
+Human cross-sample diversity: corpus distinct-2 0.718 per 256 chunks (samples: see the table above, per seed); entropy 4.315.
+
+## XSum (summaries): V-cycles on the released greedy decoding (11334 documents)
+
+Single pass exactly as the released evaluation (levels sampled with temperature 1, top_k 1: greedy). V-cycle from level m: re-encode the output (canonical: text, EOS, PAD), keep the encoder's levels < m, regenerate levels m..8 greedily with the same prompt. Without re-encoding, the same regeneration reproduces the single pass exactly (checked below), so the single pass is the equal-compute control. Differences: paired bootstrap over documents. *Changed*: share of documents whose output differs from the previous cycle's (1 − fixed-point rate). Decoder vs generate(): 0/64 differ with the prompt cache, 0/64 without.
+
+| Variant | Extra NFE | R-1 | R-2 | R-L | Δ R-1 [95% CI] | Δ R-2 | Δ R-L | Gen. PPL (GPT-2) | PPL ratio [95% CI] | Words | Changed |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| baseline | +0 | 34.92 | 12.71 | 27.93 | – | – | – | 82.6 | – | 20.7 | – |
+| no-restrict m=3 | +6 | identical to the single pass on 100.0% of documents ||||||||||
+| vcycle m=3 c=1 | +6 | 35.05 | 12.90 | 28.05 | +0.13 [+0.04, +0.22] | +0.19 [+0.11, +0.27] | +0.13 [+0.05, +0.20] | 70.2 | 0.850 [0.841, 0.859] | 20.7 | 100.0% |
+| vcycle m=3 c=2 | +12 | 35.11 | 12.94 | 28.07 | +0.19 [+0.09, +0.30] | +0.22 [+0.14, +0.31] | +0.14 [+0.06, +0.23] | 66.7 | 0.807 [0.797, 0.817] | 20.7 | 92.0% |
+| vcycle m=3 c=3 | +18 | 35.05 | 12.91 | 28.03 | +0.13 [+0.02, +0.23] | +0.20 [+0.11, +0.29] | +0.11 [+0.02, +0.19] | 64.1 | 0.776 [0.766, 0.786] | 20.7 | 77.7% |
+| vcycle m=5 c=1 | +4 | 35.11 | 12.89 | 28.07 | +0.19 [+0.13, +0.25] | +0.18 [+0.13, +0.22] | +0.15 [+0.10, +0.19] | 68.4 | 0.828 [0.821, 0.835] | 20.7 | 100.0% |
+| vcycle m=5 c=2 | +8 | 35.16 | 12.94 | 28.10 | +0.23 [+0.18, +0.30] | +0.22 [+0.17, +0.28] | +0.17 [+0.12, +0.23] | 64.4 | 0.779 [0.772, 0.786] | 20.7 | 80.6% |
+| vcycle m=5 c=3 | +12 | 35.17 | 12.96 | 28.11 | +0.24 [+0.18, +0.32] | +0.25 [+0.19, +0.31] | +0.19 [+0.13, +0.24] | 62.5 | 0.756 [0.749, 0.764] | 20.7 | 53.2% |
+| vcycle m=5 c=1 (raw re-encoding) | +4 | 35.16 | 12.84 | 28.08 | +0.24 [+0.18, +0.30] | +0.13 [+0.08, +0.19] | +0.15 [+0.10, +0.21] | 69.6 | 0.842 [0.834, 0.849] | 20.9 | 100.0% |
+
+Residual of the single pass: fixed-point rate 0.000; flagging the worst tenth of documents (ROUGE-L): AUROC 0.598 (round trip), 0.631 (level-local).
+
+## WMT14 German → English: V-cycles on the released greedy decoding (3003 documents)
+
+Single pass exactly as the released evaluation (levels sampled with temperature 1, top_k 1: greedy). V-cycle from level m: re-encode the output (canonical: text, EOS, PAD), keep the encoder's levels < m, regenerate levels m..10 greedily with the same prompt. Without re-encoding, the same regeneration reproduces the single pass exactly (checked below), so the single pass is the equal-compute control. Differences: paired bootstrap over documents. *Changed*: share of documents whose output differs from the previous cycle's (1 − fixed-point rate). Decoder vs generate(): 0/64 differ with the prompt cache, 0/64 without.
+
+| Variant | Extra NFE | BLEU | Δ BLEU [95% CI] | BLEU (lc) | chrF | Δ sentence chrF [95% CI] | Length ratio | Changed |
+|---|---|---|---|---|---|---|---|---|
+| baseline | +0 | 21.73 | – | 22.62 | 49.59 | – | 0.938 | – |
+| no-restrict m=3 | +8 | identical to the single pass on 100.0% of documents |||||||
+| vcycle m=3 c=1 | +8 | 22.05 | +0.32 [+0.05, +0.59] | 22.93 | 49.76 | +0.22 [+0.01, +0.41] | 0.939 | 98.5% |
+| vcycle m=3 c=2 | +16 | 22.22 | +0.49 [+0.21, +0.77] | 23.08 | 49.75 | +0.23 [+0.03, +0.44] | 0.938 | 81.7% |
+| vcycle m=3 c=3 | +24 | 22.28 | +0.55 [+0.25, +0.83] | 23.18 | 49.73 | +0.18 [-0.04, +0.41] | 0.937 | 67.0% |
+| no-restrict m=5 | +6 | identical to the single pass on 100.0% of documents |||||||
+| vcycle m=5 c=1 | +6 | 22.02 | +0.29 [+0.10, +0.50] | 22.85 | 49.57 | -0.01 [-0.16, +0.15] | 0.938 | 99.6% |
+| vcycle m=5 c=2 | +12 | 21.96 | +0.23 [+0.02, +0.45] | 22.81 | 49.48 | -0.11 [-0.27, +0.06] | 0.938 | 77.2% |
+| vcycle m=5 c=3 | +18 | 22.00 | +0.27 [+0.05, +0.51] | 22.86 | 49.52 | -0.11 [-0.29, +0.06] | 0.938 | 59.0% |
+| no-restrict m=7 | +4 | identical to the single pass on 100.0% of documents |||||||
+| vcycle m=7 c=1 | +4 | 21.64 | -0.09 [-0.21, +0.01] | 22.52 | 49.40 | -0.18 [-0.28, -0.09] | 0.938 | 99.1% |
+| vcycle m=7 c=2 | +8 | 21.69 | -0.04 [-0.15, +0.07] | 22.56 | 49.38 | -0.20 [-0.31, -0.09] | 0.938 | 51.3% |
+| vcycle m=7 c=3 | +12 | 21.64 | -0.09 [-0.22, +0.03] | 22.50 | 49.34 | -0.25 [-0.36, -0.14] | 0.937 | 26.5% |
+| vcycle m=5 c=1 (raw re-encoding) | +6 | 17.45 | -4.28 [-4.77, -3.81] | 18.11 | 48.27 | -1.41 [-1.66, -1.17] | 1.053 | 100.0% |
+
+Residual of the single pass: fixed-point rate 0.000; flagging the worst tenth of documents (sentence chrF): AUROC 0.510 (round trip), 0.528 (level-local).
+
+## Pairwise preference by a local LLM judge
+
+Each item pairs two texts made from the same single-pass sample (LM1B) or for the same source (XSum, WMT14). The judge sees both orders; an item's preference for A is the mean over the orders of P(A's letter) / (P(A) + P(B)) from its next-token probabilities. CIs: bootstrap over items. *Order agreement*: share of items on which the judge picks the same text in both orders.
+
+| Task | A | B | Items | Mean preference for A [95% CI] | Share preferring A [95% CI] | Order agreement | Judge |
+|---|---|---|---|---|---|---|---|
+| LM1B-medium | human | baseline | 5120 | 0.669 [0.664, 0.674] | 0.972 [0.967, 0.976] | 33% | Qwen2.5-7B-Instruct |
+| LM1B-medium | vcycle m=6 | baseline | 5120 | 0.633 [0.626, 0.639] | 0.758 [0.746, 0.770] | 37% | Qwen2.5-7B-Instruct |
+| LM1B-medium | vcycle m=6 | no-restrict m=6 | 5120 | 0.589 [0.581, 0.597] | 0.639 [0.625, 0.652] | 48% | Qwen2.5-7B-Instruct |
+| WMT14 | vcycle m=5 c=1 | baseline | 3003 | 0.515 [0.506, 0.525] | 0.441 [0.424, 0.460] | 33% | Qwen2.5-7B-Instruct |
+| XSum | vcycle m=5 c=1 | baseline | 2000 | 0.526 [0.516, 0.535] | 0.440 [0.417, 0.462] | 23% | Qwen2.5-7B-Instruct |
 

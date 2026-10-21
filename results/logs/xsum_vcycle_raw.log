@@ -1,0 +1,7 @@
+LevelDecoder vs generate() on 64 xsum documents: 0 differ with the prompt cache, 0 without
+W1021 20:46:19.536000 15520 .venv\Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights:  19%|#8        | 28/148 [00:00<00:00, 240.42it/s]Loading weights:  47%|####6     | 69/148 [00:00<00:00, 281.84it/s]Loading weights: 100%|##########| 148/148 [00:00<00:00, 566.82it/s]
+baseline               {'rouge1': 34.922, 'rouge2': 12.711, 'rougeL': 27.926, 'gen_ppl': 82.629, 'words': 20.658, 'seconds': 500.765}
+residual: {'fixed_point_rate': 0.0, 'roundtrip_total': {'spearman_with_quality': -0.05115986108120665, 'auroc_worst_decile': 0.5769737643554049}, 'local_total': {'spearman_with_quality': -0.02823785906329019, 'auroc_worst_decile': 0.5738949064984775}}
+no-restrict|m=5        identical to the single pass on 100.00% of documents
+vcycle|m=5|c=1         {'rouge1': 35.164, 'rouge2': 12.845, 'rougeL': 28.079, 'gen_ppl': 69.561, 'words': 20.879, 'seconds': 415.306, 'changed_vs_prev': 1.0}

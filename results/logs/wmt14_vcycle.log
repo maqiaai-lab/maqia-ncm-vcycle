@@ -1,0 +1,15 @@
+LevelDecoder vs generate() on 64 wmt14 documents: 0 differ with the prompt cache, 0 without
+baseline               {'bleu': 21.729, 'bleu_lc': 22.622, 'chrf': 49.585, 'len_ratio': 0.938, 'bleu_from_stats': 21.729, 'seconds': 62.626}
+residual: {'fixed_point_rate': 0.0, 'roundtrip_total': {'spearman_with_quality': -0.06322294136454425, 'auroc_worst_decile': 0.5103424066336982}, 'local_total': {'spearman_with_quality': -0.08191678492392351, 'auroc_worst_decile': 0.5283504774364258}}
+no-restrict|m=3        identical to the single pass on 100.00% of documents
+vcycle|m=3|c=1         {'bleu': 22.054, 'bleu_lc': 22.932, 'chrf': 49.756, 'len_ratio': 0.939, 'bleu_from_stats': 22.054, 'seconds': 63.09, 'changed_vs_prev': 0.985}
+vcycle|m=3|c=2         {'bleu': 22.217, 'bleu_lc': 23.077, 'chrf': 49.748, 'len_ratio': 0.938, 'bleu_from_stats': 22.217, 'seconds': 63.609, 'changed_vs_prev': 0.817}
+vcycle|m=3|c=3         {'bleu': 22.282, 'bleu_lc': 23.179, 'chrf': 49.727, 'len_ratio': 0.937, 'bleu_from_stats': 22.282, 'seconds': 64.029, 'changed_vs_prev': 0.67}
+no-restrict|m=5        identical to the single pass on 100.00% of documents
+vcycle|m=5|c=1         {'bleu': 22.017, 'bleu_lc': 22.853, 'chrf': 49.567, 'len_ratio': 0.938, 'bleu_from_stats': 22.017, 'seconds': 57.573, 'changed_vs_prev': 0.996}
+vcycle|m=5|c=2         {'bleu': 21.963, 'bleu_lc': 22.815, 'chrf': 49.483, 'len_ratio': 0.938, 'bleu_from_stats': 21.963, 'seconds': 57.669, 'changed_vs_prev': 0.772}
+vcycle|m=5|c=3         {'bleu': 22.001, 'bleu_lc': 22.861, 'chrf': 49.521, 'len_ratio': 0.938, 'bleu_from_stats': 22.001, 'seconds': 57.445, 'changed_vs_prev': 0.59}
+no-restrict|m=7        identical to the single pass on 100.00% of documents
+vcycle|m=7|c=1         {'bleu': 21.636, 'bleu_lc': 22.516, 'chrf': 49.402, 'len_ratio': 0.938, 'bleu_from_stats': 21.636, 'seconds': 48.963, 'changed_vs_prev': 0.991}
+vcycle|m=7|c=2         {'bleu': 21.692, 'bleu_lc': 22.561, 'chrf': 49.378, 'len_ratio': 0.938, 'bleu_from_stats': 21.692, 'seconds': 49.247, 'changed_vs_prev': 0.513}
+vcycle|m=7|c=3         {'bleu': 21.636, 'bleu_lc': 22.505, 'chrf': 49.342, 'len_ratio': 0.937, 'bleu_from_stats': 21.636, 'seconds': 49.212, 'changed_vs_prev': 0.265}
