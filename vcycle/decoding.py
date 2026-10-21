@@ -7,8 +7,10 @@ with codes independent within a level, and the frozen decoder maps z_hat^(K) to 
 `LevelDecoder.logits` reproduces one step of NextConceptTransformer.generate exactly
 (checked against it in experiments/phase0_baseline.py), so everything built from it
 (starting mid-hierarchy, masked resampling, re-encoding) reuses the released weights unchanged.
-Supported configs: query_level0 (level 0 from the learned queries, or given), no CFG, no context
-encoder (this covers the released Sudoku, LM1B, OWT and TinyStories models).
+Supported configs: no CFG, no context encoder, and either query_level0 (level 0 from the learned queries, or
+given) or a level 0 that is always given (query_level0 false, as in TinyStories and OWT: level 0 is drawn from
+the released unigram). Without query_level0 the generator has no level-0 head: target positions start at
+level 1 and heads, RoPE buffers and the post-upsample convs are indexed by k - 1, exactly as in generate().
 """
 import torch
 import torch.nn.functional as F
@@ -40,10 +42,10 @@ class LevelDecoder:
         self.net, self.vqvae, self.vq = ncm.net, ncm.vqvae, ncm.vqvae.vq
         self.levels = list(self.vq.levels)
         self.K = len(self.levels)
-        self.offsets = [sum(self.levels[:k]) for k in range(self.K)]
         net = self.net
-        assert net.query_level0 and not net.l0_ar, "needs query_level0 generation"
-        assert not net.use_ctx_encoder
+        assert not net.l0_ar and not net.use_ctx_encoder
+        self.lvl_first = 0 if net.query_level0 else 1  # first level the generator predicts
+        self.offsets = [sum(self.levels[self.lvl_first:k]) for k in range(self.K)]
         # Read config flags once with .get(): getattr() on a missing OmegaConf key raises and catches
         # an exception whose traceback cycle pins the caller's frame (and its cached prompt tensors).
         self.raw_token_prefix = bool(net.config.get("raw_token_prefix", False))
@@ -86,7 +88,7 @@ class LevelDecoder:
 
     @torch.no_grad()
     def _cached_forward(self, x, prefix, k):
-        """Run level-k target embeddings x against the cached prompt keys/values."""
+        """Run target embeddings x against the cached prompt keys/values; k is the head / RoPE index."""
         net, P, l = self.net, self.net.prefix_len, x.shape[1]
         rope = (getattr(net, f"rope_cos_gen_{k}"), getattr(net, f"rope_sin_gen_{k}")) if net.use_rope else None
         mask = torch.zeros(1, 1, l, P + l, device=x.device)
@@ -116,8 +118,10 @@ class LevelDecoder:
         B, dev = pe.shape[0], pe.device
         lpe = self._level_pos(dev)
         a, l = self.offsets[k], self.levels[k]
+        h = k - self.lvl_first  # head / RoPE / conv index
         self.nfe += 1
         if k == 0:
+            assert self.lvl_first == 0, "this model has no level-0 head: pass level 0 in codes and start at 1"
             q = net.build_l0_query_input(B, pe.dtype)
             if net.use_post_upsample_conv:
                 q = net._apply_post_upsample_conv_single(q, 0)
@@ -136,11 +140,11 @@ class LevelDecoder:
             return net.lm_heads[0](h[:, P:, :])
         x = F.interpolate(z_hat.transpose(-1, -2), size=(l,), mode="area").transpose(-1, -2)
         if net.use_post_upsample_conv:
-            x = net._apply_post_upsample_conv_single(x, k)
+            x = net._apply_post_upsample_conv_single(x, h)
         x = net.transformer.wte(x) + lpe[:, a:a + l]
         if prefix.kv is not None:
-            return self._cached_forward(x, prefix, k)
-        return net._decode_level_logits(x, pe, k - 1, prefix.bias, hidx=k)
+            return self._cached_forward(x, prefix, h)
+        return net._decode_level_logits(x, pe, k - 1, prefix.bias, hidx=h)
 
     @torch.no_grad()
     def sample(self, logits, temperature=0.0, top_k=0, top_p=1.0):

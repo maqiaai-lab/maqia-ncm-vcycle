@@ -3,3 +3,4 @@ artifacts/
 data/
 __pycache__/
 *.pyc
+results/cache/lm1b_mauve_feats_*.pt

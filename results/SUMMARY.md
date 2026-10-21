@@ -115,61 +115,117 @@ Paired differences in accuracy (percentage points) at matched NFE, mean [95% CI]
 | vcycle-tau m=0 − fresh m=0 | vs fresh restarts (best-of-N with the checker) | +0.29 [+0.00, +0.59] | +0.20 [-0.22, +0.64] | -0.18 [-0.62, +0.34] | -0.06 [-0.58, +0.48] |
 | vcycle-accept m=0 − fresh m=0 | vs fresh restarts (best-of-N with the checker) | +0.68 [+0.35, +1.00] | +0.53 [+0.04, +1.00] | +0.22 [-0.30, +0.78] | +0.29 [-0.26, +0.85] |
 
-## LM1B-medium: residual diagnostic and V-cycle (1 seed × 256 samples)
+## LM1B-large: residual diagnostic and V-cycle (3 seeds × 256 samples)
 
 Gen. PPL is corpus-level under GPT-2 large (FLM protocol, as in the paper); entropy is the mean per-sample unigram entropy of the raw ids. V-cycle and no-restriction resample levels m..K-1 once, at T=1, from the same baseline samples, so they cost the same (K-m extra NFE).
 
 | Variant | Extra NFE | Gen. PPL (per seed) | Gen. PPL mean | Entropy | Adjacent repeats | distinct-2 | [PAD] fraction |
 |---|---|---|---|---|---|---|---|
-| baseline | 0 | 90.7 | 90.7 | 4.343 | 0.29% | 0.959 | 0.0% |
-| vcycle m=6 | 6 | 69.6 | 69.6 | 4.346 | 0.31% | 0.959 | 0.0% |
-| no-restrict m=6 | 6 | 87.5 | 87.5 | 4.336 | 0.35% | 0.959 | 0.0% |
-| vcycle m=8 | 4 | 78.9 | 78.9 | 4.347 | 0.24% | 0.959 | 0.0% |
-| no-restrict m=8 | 4 | 89.4 | 89.4 | 4.340 | 0.27% | 0.958 | 0.0% |
+| baseline | 0 | 81.4, 85.1, 80.1 | 82.2 | 4.340 | 0.34% | 0.959 | 0.0% |
+| vcycle m=6 | 6 | 63.1, 65.2, 63.4 | 63.9 | 4.344 | 0.31% | 0.958 | 0.0% |
+| no-restrict m=6 | 6 | 79.5, 79.3, 80.4 | 79.8 | 4.338 | 0.31% | 0.959 | 0.0% |
+| vcycle m=8 | 4 | 72.3, 74.5, 70.7 | 72.5 | 4.346 | 0.29% | 0.959 | 0.0% |
+| no-restrict m=8 | 4 | 80.3, 84.2, 80.5 | 81.7 | 4.340 | 0.32% | 0.959 | 0.0% |
 
 Paired bootstrap over samples (seeds pooled): corpus gen. PPL ratio A / B, mean [95% CI]:
 
 | A / B | Ratio |
 |---|---|
-| vcycle m=6 / baseline | 0.768 [0.744, 0.790] |
-| no-restrict m=6 / baseline | 0.964 [0.926, 1.005] |
-| vcycle m=8 / baseline | 0.870 [0.856, 0.886] |
-| no-restrict m=8 / baseline | 0.985 [0.959, 1.011] |
-| vcycle m=6 / no-restrict m=6 | 0.796 [0.765, 0.825] |
-| vcycle m=8 / no-restrict m=8 | 0.883 [0.859, 0.909] |
+| vcycle m=6 / baseline | 0.777 [0.765, 0.790] |
+| no-restrict m=6 / baseline | 0.970 [0.951, 0.993] |
+| vcycle m=8 / baseline | 0.882 [0.874, 0.890] |
+| no-restrict m=8 / baseline | 0.993 [0.978, 1.009] |
+| vcycle m=6 / no-restrict m=6 | 0.801 [0.784, 0.818] |
+| vcycle m=8 / no-restrict m=8 | 0.888 [0.874, 0.901] |
 
 Residual vs per-sample quality (Spearman ρ, mean over seeds; AUROC for flagging the worst-decile samples):
 
 | Residual | ρ with per-token NLL | ρ with adjacent repeats | ρ with entropy | AUROC worst-NLL decile | AUROC worst-repeat decile |
 |---|---|---|---|---|---|
-| roundtrip_total | +0.172 | +0.116 | +0.025 | 0.594 | 0.571 |
-| local_total | +0.222 | +0.107 | +0.070 | 0.636 | 0.581 |
+| roundtrip_total | +0.159 | +0.029 | -0.002 | 0.635 | 0.512 |
+| local_total | +0.242 | +0.060 | +0.025 | 0.678 | 0.538 |
 
 Fixed-point rate: 0.000.
 
-Cross-sample diversity (seed 42): corpus distinct-2 / distinct-3 over all samples:
+Cross-sample diversity (seed 0): corpus distinct-2 / distinct-3 over all samples:
 
 | Variant | distinct-2 | distinct-3 |
 |---|---|---|
-| baseline | 0.586 | 0.864 |
-| vcycle m=6 | 0.554 | 0.842 |
-| no-restrict m=6 | 0.583 | 0.864 |
-| vcycle m=8 | 0.569 | 0.855 |
-| no-restrict m=8 | 0.583 | 0.864 |
+| baseline | 0.580 | 0.859 |
+| vcycle m=6 | 0.553 | 0.838 |
+| no-restrict m=6 | 0.579 | 0.858 |
+| vcycle m=8 | 0.570 | 0.854 |
+| no-restrict m=8 | 0.581 | 0.859 |
 
-Examples (seed 42, first 3 samples; same starting sample in each row, text truncated):
+Examples (seed 0, first 3 samples; same starting sample in each row, text truncated):
 
-- *baseline*: / , not guilty tuesday to nine charges of securities fraud, conspiracy wire the fraud and raising federal funds in state 1988 or local taxes.  /  " michael ' s number has been around 150 million to win.  /  then two of his 17 - year - old relationship seemed so great in 2007 and together that he fel
-- *vcycle m=6*: /  not guilty on tuesday to four counts of fraud charges, wire the and laundering, of state funds, no 1988 or federal taxes.  /  michael jackson ' s total has fallen $ 150 million to win.  /  then two of his 17 - year - old and daughter have kept themselves from meeting, and they felt like he could 
-- *no-restrict m=6*: /  wang pleaded guilty on tuesday charges ranging from investment fraud to false accounting money and corruption in federal funds.  /  in state local courts, lastr ' s claim has been taken around the home of an assistant at high school for human rights.  /  despite being submitted to so many securit
+- *baseline*: /  much of the i services, as technology which it has used in the past.  /  we have fallen on us and we ' ll die next year.  /  the report follows president obama ' s government allegations that a " large " - enabled type of e - mail did not disclose its decision to use names tour european united pe
+- *vcycle m=6*: /  much of the financial services, pharmaceutical technology it has not used in the past.  /  we have fallen back on that we ' ll die next year.  /  the report follows president barack obama ' s allegations that a " large - scale " number of e - mails did not ease its phone numbers.  /  european ele
+- *no-restrict m=6*: /  much of the time ' have done and it probably has been in the past.  /  we have back to us that we ' ll get even driving this down.  /  the meeting would be aired on therlus " based on a very number of healthcare e - mails sent about what happened last summer, " he said.  /  they are found the pro
 
-- *baseline*: /  3. 2 percent each may.  /  washington ( cnn ) - the democratic majority leader endorsed clinton by democrats and john mccain and sen. edward kennedy, three key senators in the current presidential election.  /  " i don ' t believe you can all do that, " nooks says.  /  several lawmakers have indi
-- *vcycle m=6*: /  2. 3 million from may.  /  washington ( ap ) - the senate majority leader harry reid faced criticism by john edwards and sen. edward kennedy has won key senators in the 2008 presidential election.  /  " i don ' t think they ' ll do it, " he sayss.  /  several us lawmakers have indicated that ther
-- *no-restrict m=6*: /  3, 27. 7 percent.  /  washington ( cnn ) - the president barack obama has faced criticism from republican john edwards and late senator edward kennedy, d., in the ' s budget.  /  " i don ' t believe in my won ' t shake things if he stops.  /  law enforcement department officials said tuesday ther
+- *baseline*: / .  /  at the 1970s, picassos, islands, portere, and other sites have been forced to shut them down because of the bridge, but no one else is sure when.  /  " if the key to this game is to make money they will not win us do they think that if i don ' get together, we should be fighting for politica
+- *vcycle m=6*: / .  /  at the airport, the nearest pilgrimages, porteren and several other sites have been forced to shut down because of the bridge, but no one else wants to move.  /  " if the key to this issue is that we must make money for them, win know that when they don ' t get together, they should be fight
+- *no-restrict m=6*: /  - together from the petit lounges, clubhouses of old port..  /  police say they have been sealed off roads and the bridge for large rallies and but allowed residents to move.  /  " if the key to the question is that this legislation will allow them to discuss what they want to, " he said.  /  the
 
-- *baseline*: /  fire, " said xweet.  /  the national transport commission is by the former office, with a group of high - profile other management to form  /  he said that since january revealed that he had spent about $ 4. 5 million on routes today.  /  washington, west virginia, texas and new hampshire, both t
-- *vcycle m=6*: /  fire, " said tweet.  /  the national transportation safety commission criticized office defended the former problems with a group of other high - profile management his operations when he was announced in january that he had spent about $ 5. 9 billion in federal funds today in washington, west vi
-- *no-restrict m=6*: /  ' s building.  /  ( gmt ) and the transport committee.  /  with the home office to engage with a series of interviews on, he says, he said, it had been revealed she had spent about $ 160, 000 on him in 2008.  /  virginia, west, carolina and washington were both set new york ' s no. 2 starting spo
+- *baseline*: /  it. up ( in other words, 25 years ago, it was time to give my money off a while ), but he was back to me to get into the business.  /  united nations action : the world ' s top climate says, " she is told that the baltic states should not extend any sanctions against iran if the government isnily
+- *vcycle m=6*: /  it up.  /  in other words, two years ago, it was all good my money got his second step off, but he was going to me back get into the business.  /  united nations sanctions : the world ' s top climate official says, she is convinced the baltic states would not extend any international action again
+- *no-restrict m=6*: / sed up ( in other words, 25 years ago i was president and my old nurse got the money off her, and hand it  /  over $ 100 a month.  /  washington - based with climate change. barack clinton ' s climate alliance adviser says she does believe that the united states would not make this decision but an
+
+## LM1B-medium: residual diagnostic and V-cycle (3 seeds × 256 samples)
+
+Gen. PPL is corpus-level under GPT-2 large (FLM protocol, as in the paper); entropy is the mean per-sample unigram entropy of the raw ids. V-cycle and no-restriction resample levels m..K-1 once, at T=1, from the same baseline samples, so they cost the same (K-m extra NFE).
+
+| Variant | Extra NFE | Gen. PPL (per seed) | Gen. PPL mean | Entropy | Adjacent repeats | distinct-2 | [PAD] fraction |
+|---|---|---|---|---|---|---|---|
+| baseline | 0 | 87.1, 89.9, 90.7 | 89.2 | 4.343 | 0.32% | 0.958 | 0.0% |
+| vcycle m=6 | 6 | 65.9, 68.5, 69.6 | 68.0 | 4.344 | 0.31% | 0.958 | 0.0% |
+| no-restrict m=6 | 6 | 86.9, 86.3, 87.5 | 86.9 | 4.338 | 0.33% | 0.959 | 0.0% |
+| vcycle m=8 | 4 | 75.5, 77.7, 78.9 | 77.4 | 4.348 | 0.27% | 0.959 | 0.0% |
+| no-restrict m=8 | 4 | 87.0, 89.9, 89.4 | 88.8 | 4.340 | 0.30% | 0.959 | 0.0% |
+
+Paired bootstrap over samples (seeds pooled): corpus gen. PPL ratio A / B, mean [95% CI]:
+
+| A / B | Ratio |
+|---|---|
+| vcycle m=6 / baseline | 0.762 [0.749, 0.776] |
+| no-restrict m=6 / baseline | 0.974 [0.951, 0.996] |
+| vcycle m=8 / baseline | 0.867 [0.859, 0.875] |
+| no-restrict m=8 / baseline | 0.995 [0.978, 1.012] |
+| vcycle m=6 / no-restrict m=6 | 0.783 [0.765, 0.802] |
+| vcycle m=8 / no-restrict m=8 | 0.871 [0.858, 0.886] |
+
+Residual vs per-sample quality (Spearman ρ, mean over seeds; AUROC for flagging the worst-decile samples):
+
+| Residual | ρ with per-token NLL | ρ with adjacent repeats | ρ with entropy | AUROC worst-NLL decile | AUROC worst-repeat decile |
+|---|---|---|---|---|---|
+| roundtrip_total | +0.095 | +0.051 | +0.014 | 0.591 | 0.546 |
+| local_total | +0.168 | +0.082 | +0.042 | 0.640 | 0.559 |
+
+Fixed-point rate: 0.000.
+
+Cross-sample diversity (seed 0): corpus distinct-2 / distinct-3 over all samples:
+
+| Variant | distinct-2 | distinct-3 |
+|---|---|---|
+| baseline | 0.576 | 0.855 |
+| vcycle m=6 | 0.542 | 0.830 |
+| no-restrict m=6 | 0.574 | 0.856 |
+| vcycle m=8 | 0.564 | 0.848 |
+| no-restrict m=8 | 0.576 | 0.858 |
+
+Examples (seed 0, first 3 samples; same starting sample in each row, text truncated):
+
+- *baseline*: /  much of the drink ' s even technology it ' s used in the past.  /  we have gone on to anything that you, ll just say that it.  / . here ' s what the words of the plan are.  /  all those involved in e - mail did not refer any evidence to each of them to have said.  /  i hold anyone, whose responsi
+- *vcycle m=6*: /  much of the drink ' s even than it has been used in the past.  /  we have want to do anything that you ' ll just say about it.  / . here ' s what the facts of your words are.  /  all those involved in e - mail did not like whether to speak each other, he said.  /  they have informed anyone in a w
+- *no-restrict m=6*: /  much of the trading and practice that it ' s not done in the past.  /  we have fallen back to anything but we ' ll get back with reality.  /  buffett ' s statement on the " chapter, based on " a number of church e - mails about including how many known cases of conversations they have used.  /  t
+
+- *baseline*: /  reported in e - mail that pakistan ' s effort has been reinted, and sent evidence that its government and their debt flag off risk, " she said.  /  but not.  /  if anyone can the things ones to get the money for your next job defense.  /  do they know it because i don ' t want to see what they fi
+- *vcycle m=6*: /  in an e - mail that pakistan ' s effort has been reinted in and that they support their government ' s flagging debt risk, " she said.  /  but not to change things where the local have ones to get money and do the next job.  /  did you know it because if i don ' t want to see what we can pay, you
+- *no-restrict m=6*: /  - by e - mail during that, the post said.  /  today i was bad back from the great form of cancer because he suffered the large rallies and decided not to the move.  /  the united states ones have special challenges, they can manage their own defense, or any issues want to think if they haven.  / 
+
+- *baseline*: /  there holes ( now the open for 25 years ago when i was one of the young as eight days off - the new year, it was back to the morning and away.  /  a taipei - based management company posted a $ 80. 2 billion quarterly loss in the united states, featured a gain by the second major car market.  /  
+- *vcycle m=6*: / s there now open at the wall for 25 years ago when i was living as the resident of second nights - off and new year he was going back to the morning and night.  /  a new york - based firm also posted $ 2. 6 quarterly loss in the united states, driven by a latest gain in the truck car market.  /  t
+- *no-restrict m=6*: /  valuations up ( the £120, 25 years ago i was a couple before my partner having the  /  off about a year later, she pulled back from the phone to create new jobs and put it.  /  chrysler takes over $ 2. 6 billion pounds in the united states, which made it a major production in the global economic 
 
 ## LM1B-small: residual diagnostic and V-cycle (3 seeds × 256 samples)
 
@@ -187,12 +243,12 @@ Paired bootstrap over samples (seeds pooled): corpus gen. PPL ratio A / B, mean 
 
 | A / B | Ratio |
 |---|---|
-| vcycle m=3 / baseline | 0.988 [0.959, 1.017] |
-| no-restrict m=3 / baseline | 1.003 [0.968, 1.039] |
-| vcycle m=6 / baseline | 0.852 [0.835, 0.866] |
-| no-restrict m=6 / baseline | 0.994 [0.972, 1.017] |
-| vcycle m=3 / no-restrict m=3 | 0.985 [0.952, 1.019] |
-| vcycle m=6 / no-restrict m=6 | 0.857 [0.839, 0.877] |
+| vcycle m=3 / baseline | 0.988 [0.958, 1.018] |
+| no-restrict m=3 / baseline | 1.003 [0.968, 1.036] |
+| vcycle m=6 / baseline | 0.852 [0.836, 0.868] |
+| no-restrict m=6 / baseline | 0.994 [0.972, 1.015] |
+| vcycle m=3 / no-restrict m=3 | 0.985 [0.950, 1.020] |
+| vcycle m=6 / no-restrict m=6 | 0.857 [0.839, 0.876] |
 
 Residual vs per-sample quality (Spearman ρ, mean over seeds; AUROC for flagging the worst-decile samples):
 
@@ -227,6 +283,62 @@ Examples (seed 1, first 3 samples; same starting sample in each row, text trunca
 - *vcycle m=6*: /  way they want to get there, is a big future, " he said.  /  what you have to make sure if something might seem it to happen.  /  there ' s nothing resentment for the uk that we have gone begun so far time since the global financial crisis, recovery in the economic markets.  /  but when here are n
 - *no-restrict m=6*: /  that they are the right to raise a piece of the energy grid ' s standard.  /  i have me to see and if it could happen..  /  yes it ' s so hard these countries in which we will pay for or each of the money has be hit by a recession and more robust.  /  but many have been looking stocks as much but
 
+## TinyStories: residual diagnostic and V-cycle (3 seeds × 256 samples)
+
+Gen. PPL is corpus-level under GPT-2 large (genppl protocol: samples cut at the first EOS, as in the paper); entropy is the mean per-sample unigram entropy of the tokens before the first EOS. V-cycle and no-restriction resample levels m..K-1 once, at T=1, from the same baseline samples, so they cost the same (K-m extra NFE).
+
+| Variant | Extra NFE | Gen. PPL (per seed) | Gen. PPL mean | Entropy | Adjacent repeats | distinct-2 | [PAD] fraction |
+|---|---|---|---|---|---|---|---|
+| baseline | 0 | 16.3, 17.1, 15.9 | 16.4 | 3.960 | 0.65% | 0.895 | 0.0% |
+| vcycle m=6 | 6 | 13.3, 13.6, 13.1 | 13.3 | 3.956 | 0.48% | 0.890 | 0.0% |
+| no-restrict m=6 | 6 | 16.2, 17.1, 16.1 | 16.5 | 3.959 | 0.66% | 0.896 | 0.0% |
+| vcycle m=8 | 4 | 14.8, 15.5, 14.6 | 15.0 | 3.960 | 0.54% | 0.893 | 0.0% |
+| no-restrict m=8 | 4 | 16.2, 16.9, 16.0 | 16.4 | 3.960 | 0.63% | 0.895 | 0.0% |
+
+Paired bootstrap over samples (seeds pooled): corpus gen. PPL ratio A / B, mean [95% CI]:
+
+| A / B | Ratio |
+|---|---|
+| vcycle m=6 / baseline | 0.812 [0.803, 0.821] |
+| no-restrict m=6 / baseline | 1.003 [0.989, 1.020] |
+| vcycle m=8 / baseline | 0.911 [0.904, 0.918] |
+| no-restrict m=8 / baseline | 0.996 [0.986, 1.006] |
+| vcycle m=6 / no-restrict m=6 | 0.809 [0.797, 0.821] |
+| vcycle m=8 / no-restrict m=8 | 0.915 [0.905, 0.924] |
+
+Residual vs per-sample quality (Spearman ρ, mean over seeds; AUROC for flagging the worst-decile samples):
+
+| Residual | ρ with per-token NLL | ρ with adjacent repeats | ρ with entropy | AUROC worst-NLL decile | AUROC worst-repeat decile |
+|---|---|---|---|---|---|
+| roundtrip_total | +0.520 | +0.235 | +0.052 | 0.810 | 0.682 |
+| local_total | +0.499 | +0.221 | +0.056 | 0.785 | 0.682 |
+
+Fixed-point rate: 0.000.
+
+Cross-sample diversity (seed 0): corpus distinct-2 / distinct-3 over all samples:
+
+| Variant | distinct-2 | distinct-3 |
+|---|---|---|
+| baseline | 0.326 | 0.612 |
+| vcycle m=6 | 0.315 | 0.598 |
+| no-restrict m=6 | 0.326 | 0.611 |
+| vcycle m=8 | 0.321 | 0.608 |
+| no-restrict m=8 | 0.327 | 0.612 |
+
+Examples (seed 0, first 3 samples; same starting sample in each row, text truncated):
+
+- *baseline*: / Once upon a time, there was a thin bug named Tim. Tim had many legs and legs. One day, he saw a frame on the ground. He didn't know what it was, so he called his friend, Sam the bug. / "Look, Sam! A pretty ornament!" said Tim. "Wow, the it is Sam! Let's go see it too too.. They both looked at the 
+- *vcycle m=6*: / Once upon a time, there was a thin cat named Tim. Tim had four legs and legs. One day, he saw a ornament on the wall. He didn't know what it was, so he called his friend, Sam the bug. / "Look, Sam! A pretty ornament!" Tim said. "WowWow, it is so pretty! Let's go see it too!" They both both looked 
+- *no-restrict m=6*: / Once upon a time, there was her thin bug named Tim. Tim had many legs and legs. One day, he saw a ornament on the ground. He didn't know what it was, so he called his friend, Sam the beetle. / "Look, Sam! A pretty ornament!" said Tim. ""Wow, it's pretty Tim! Let's see it," said Sam. They both look
+
+- *baseline*: / Once upon a time, there was a humble tree. It was in a big, big park. In the park, it saw shade. The tree thought, "I want to sit on this shade." / On the tree, there was a bird. The bird liked to whistle a song. The tree liked the song. The bird tried to whistle a song, but the tree did not know 
+- *vcycle m=6*: / Once upon a time, there was a humble tree. It was in a big, big park. In the park, it saw shade. The tree thought, "I want to sit on this shade." / In the tree, there was a bird. The bird liked to sing a song. The tree liked the song. The bird tried to whistle a song, but the tree did not know the
+- *no-restrict m=6*: / Once upon a time, there was a humble tree. It was in a big, green park. In the park, there was shade. The tree thought, "I want to sit on this tree." / In the tree, there was a bird. The bird liked to whistle a song. The tree liked the song. The bird tried to sing a song, but the tree did not know
+
+- *baseline*: /  / Once upon a time there made a little girl called Mary. She loved to skip and play day long. One day, Mary was skipping through when she tripped and fell into a shop. / Mary felt so sad and and scared. She stepped up and said "ooIs?" Then she heard someone come. She felt scared and it was her mu
+- *vcycle m=6*: /  / Once upon a time there was a little girl called Mary. She loved to skip and play day long. One day, when Mary was skipping, she tripped and fell into a shop. / Mary felt so sad and scared. She stepped up and said "What happened?" Then, she heard someone come. She felt scared and it was her mum.
+- *no-restrict m=6*: /  / Once upon a time there was a little girl named Mary. She loved to skip and play day long. One day, Mary was skipping through, she tripped and fell into the shop. / Mary felt so bad and was embarrassed. She looked up and said, "Hello? there?". Then heard someone.  / Then, her mum came her. Mummy
+
 ## LM1B-small sweep: restart level and number of cycles (seed 42, 256 samples)
 
 Same baseline samples for every row. Extra NFE is relative to one NCM pass (11 generator levels; level 0 is drawn from a unigram). Ratio: corpus gen. PPL vs the no-restriction run at the same level, paired bootstrap over samples.
@@ -234,17 +346,131 @@ Same baseline samples for every row. Extra NFE is relative to one NCM pass (11 g
 | Variant | Extra NFE | Gen. PPL | Ratio vs no-restrict [95% CI] | Entropy | distinct-2 (corpus) | Adjacent repeats |
 |---|---|---|---|---|---|---|
 | baseline | +0 | 95.8 | – | 4.316 | 0.505 | 0.49% |
-| vcycle m=4 c=1 | +8 | 86.2 | 0.933 [0.892, 0.980] | 4.334 | 0.470 | 0.51% |
+| vcycle m=4 c=1 | +8 | 86.2 | 0.933 [0.892, 0.977] | 4.334 | 0.470 | 0.51% |
 | no-restrict m=4 c=1 | +8 | 92.4 | – | 4.310 | 0.503 | 0.49% |
-| vcycle m=6 c=1 | +6 | 79.9 | 0.871 [0.837, 0.905] | 4.342 | 0.477 | 0.49% |
+| vcycle m=6 c=1 | +6 | 79.9 | 0.871 [0.837, 0.906] | 4.342 | 0.477 | 0.49% |
 | no-restrict m=6 c=1 | +6 | 91.8 | – | 4.310 | 0.504 | 0.46% |
-| vcycle m=8 c=1 | +4 | 82.8 | 0.865 [0.836, 0.895] | 4.337 | 0.489 | 0.35% |
+| vcycle m=8 c=1 | +4 | 82.8 | 0.865 [0.837, 0.893] | 4.337 | 0.489 | 0.35% |
 | no-restrict m=8 c=1 | +4 | 95.7 | – | 4.316 | 0.508 | 0.44% |
-| vcycle m=10 c=1 | +2 | 88.2 | 0.920 [0.897, 0.942] | 4.327 | 0.497 | 0.37% |
+| vcycle m=10 c=1 | +2 | 88.2 | 0.920 [0.896, 0.944] | 4.327 | 0.497 | 0.37% |
 | no-restrict m=10 c=1 | +2 | 95.8 | – | 4.313 | 0.506 | 0.47% |
-| vcycle m=6 c=2 | +12 | 75.2 | 0.819 [0.782, 0.858] | 4.350 | 0.470 | 0.51% |
-| vcycle m=6 c=3 | +18 | 72.8 | 0.794 [0.757, 0.832] | 4.362 | 0.459 | 0.42% |
-| vcycle m=8 c=2 | +8 | 75.2 | 0.785 [0.758, 0.810] | 4.343 | 0.481 | 0.39% |
+| vcycle m=6 c=2 | +12 | 75.2 | 0.819 [0.785, 0.859] | 4.350 | 0.470 | 0.51% |
+| vcycle m=6 c=3 | +18 | 72.8 | 0.794 [0.760, 0.832] | 4.362 | 0.459 | 0.42% |
+| vcycle m=8 c=2 | +8 | 75.2 | 0.785 [0.760, 0.810] | 4.343 | 0.481 | 0.39% |
 | baseline T=0.8 | +0 | 82.6 | – | 4.268 | 0.433 | 0.81% |
 | baseline T=0.9 | +0 | 82.5 | – | 4.289 | 0.464 | 0.61% |
+
+## LM1B-medium: iterated V-cycles (seed 42, 256 samples, cuda)
+
+Each cycle re-encodes the newest sample, keeps encode(x)_{<m} and resamples levels m..K-1 at T=1. Ratios compare corpus gen. PPL, paired bootstrap over samples. *Coarse FP*: share of samples whose re-encoded levels < m equal the codes they were generated from (a coarse fixed point). *Agree*: positional token agreement with the original draft / with the previous cycle.
+
+| m | Cycle | Extra NFE | Gen. PPL | Ratio vs no-restrict [95% CI] | Ratio vs previous cycle [95% CI] | Entropy | distinct-2 (corpus) | Coarse FP | Agree draft / prev |
+|---|---|---|---|---|---|---|---|---|---|
+| 6 | no-restrict | +6 | 89.5 | – | – | 4.339 | 0.582 | 0.0% | 0.207 / – |
+| 6 | 0 | +0 | 90.7 | – | – | 4.343 | 0.586 | 0.0% | 1.000 / 1.000 |
+| 6 | 1 | +6 | 70.1 | 0.784 [0.754, 0.815] | 0.773 [0.753, 0.795] | 4.347 | 0.553 | 0.0% | 0.527 / 0.527 |
+| 6 | 2 | +12 | 62.9 | 0.703 [0.676, 0.732] | 0.897 [0.875, 0.918] | 4.352 | 0.540 | 0.0% | 0.411 / 0.602 |
+| 6 | 3 | +18 | 58.7 | 0.655 [0.631, 0.683] | 0.933 [0.912, 0.953] | 4.349 | 0.528 | 0.0% | 0.354 / 0.641 |
+| 6 | 4 | +24 | 55.8 | 0.623 [0.598, 0.651] | 0.951 [0.930, 0.973] | 4.352 | 0.526 | 0.0% | 0.318 / 0.671 |
+| 6 | 5 | +30 | 53.2 | 0.595 [0.571, 0.620] | 0.955 [0.929, 0.977] | 4.352 | 0.514 | 0.0% | 0.290 / 0.683 |
+| 6 | 6 | +36 | 51.9 | 0.580 [0.556, 0.607] | 0.975 [0.956, 0.996] | 4.357 | 0.510 | 0.0% | 0.271 / 0.698 |
+| 8 | no-restrict | +4 | 89.7 | – | – | 4.347 | 0.586 | 0.0% | 0.565 / – |
+| 8 | 0 | +0 | 90.7 | – | – | 4.343 | 0.586 | 0.0% | 1.000 / 1.000 |
+| 8 | 1 | +4 | 78.5 | 0.874 [0.851, 0.897] | 0.865 [0.851, 0.880] | 4.345 | 0.569 | 0.0% | 0.863 / 0.863 |
+| 8 | 2 | +8 | 72.5 | 0.808 [0.787, 0.830] | 0.924 [0.911, 0.936] | 4.348 | 0.560 | 0.0% | 0.815 / 0.911 |
+| 8 | 3 | +12 | 70.0 | 0.780 [0.759, 0.800] | 0.965 [0.952, 0.976] | 4.350 | 0.558 | 0.0% | 0.784 / 0.929 |
+| 8 | 4 | +16 | 67.3 | 0.750 [0.730, 0.771] | 0.962 [0.952, 0.973] | 4.351 | 0.554 | 1.2% | 0.764 / 0.944 |
+| 8 | 5 | +20 | 66.4 | 0.740 [0.719, 0.761] | 0.986 [0.976, 0.997] | 4.352 | 0.553 | 1.2% | 0.747 / 0.949 |
+| 8 | 6 | +24 | 65.1 | 0.725 [0.705, 0.746] | 0.980 [0.971, 0.990] | 4.354 | 0.552 | 2.7% | 0.733 / 0.952 |
+
+## LM1B-small: iterated V-cycles (seed 42, 256 samples, cuda)
+
+Each cycle re-encodes the newest sample, keeps encode(x)_{<m} and resamples levels m..K-1 at T=1. Ratios compare corpus gen. PPL, paired bootstrap over samples. *Coarse FP*: share of samples whose re-encoded levels < m equal the codes they were generated from (a coarse fixed point). *Agree*: positional token agreement with the original draft / with the previous cycle.
+
+| m | Cycle | Extra NFE | Gen. PPL | Ratio vs no-restrict [95% CI] | Ratio vs previous cycle [95% CI] | Entropy | distinct-2 (corpus) | Coarse FP | Agree draft / prev |
+|---|---|---|---|---|---|---|---|---|---|
+| 6 | no-restrict | +6 | 93.9 | – | – | 4.307 | 0.503 | 0.0% | 0.150 / – |
+| 6 | 0 | +0 | 95.8 | – | – | 4.316 | 0.505 | 0.0% | 1.000 / 1.000 |
+| 6 | 1 | +6 | 82.7 | 0.881 [0.844, 0.919] | 0.863 [0.834, 0.890] | 4.345 | 0.484 | 0.0% | 0.382 / 0.382 |
+| 6 | 2 | +12 | 77.9 | 0.830 [0.795, 0.866] | 0.942 [0.914, 0.970] | 4.354 | 0.469 | 0.0% | 0.262 / 0.438 |
+| 6 | 3 | +18 | 75.8 | 0.808 [0.769, 0.844] | 0.974 [0.943, 1.005] | 4.364 | 0.460 | 0.0% | 0.204 / 0.456 |
+| 6 | 4 | +24 | 73.7 | 0.786 [0.751, 0.819] | 0.973 [0.948, 1.000] | 4.369 | 0.454 | 0.0% | 0.173 / 0.474 |
+| 6 | 5 | +30 | 72.3 | 0.770 [0.735, 0.809] | 0.980 [0.954, 1.007] | 4.374 | 0.446 | 0.0% | 0.151 / 0.486 |
+| 6 | 6 | +36 | 72.1 | 0.768 [0.732, 0.805] | 0.998 [0.970, 1.027] | 4.378 | 0.441 | 0.0% | 0.136 / 0.486 |
+| 8 | no-restrict | +4 | 95.9 | – | – | 4.313 | 0.508 | 0.0% | 0.461 / – |
+| 8 | 0 | +0 | 95.8 | – | – | 4.316 | 0.505 | 0.0% | 1.000 / 1.000 |
+| 8 | 1 | +4 | 83.2 | 0.867 [0.842, 0.894] | 0.868 [0.848, 0.888] | 4.332 | 0.488 | 0.0% | 0.765 / 0.765 |
+| 8 | 2 | +8 | 76.6 | 0.799 [0.774, 0.822] | 0.921 [0.903, 0.938] | 4.341 | 0.476 | 0.0% | 0.683 / 0.822 |
+| 8 | 3 | +12 | 72.1 | 0.752 [0.726, 0.777] | 0.941 [0.923, 0.959] | 4.347 | 0.470 | 0.0% | 0.629 / 0.850 |
+| 8 | 4 | +16 | 70.0 | 0.730 [0.704, 0.755] | 0.971 [0.955, 0.987] | 4.350 | 0.464 | 0.0% | 0.593 / 0.867 |
+| 8 | 5 | +20 | 67.3 | 0.702 [0.676, 0.726] | 0.961 [0.946, 0.976] | 4.352 | 0.458 | 0.0% | 0.568 / 0.880 |
+| 8 | 6 | +24 | 66.4 | 0.693 [0.666, 0.719] | 0.987 [0.973, 1.001] | 4.356 | 0.457 | 0.0% | 0.545 / 0.885 |
+
+## LM1B-large: residual-gated V-cycle (m = 6; 3 seeds × 256 samples)
+
+Only the top-q samples by level-local residual are cycled; extra NFE is the mean per sample. Single pass 82.2, every sample cycled 63.9. *Share of gain*: fraction of the log-PPL gain of cycling every sample. Ratio: residual gate / random gate at the same q, paired bootstrap over samples.
+
+| q | Extra NFE | Residual gate | Random gate | Oracle gate (own NLL) | Residual / random [95% CI] | Share of gain: residual / oracle |
+|---|---|---|---|---|---|---|
+| 0.1 | +0.6 | 79.2 | 80.1 | 78.8 | 0.988 [0.980, 0.996] | 0.15 / 0.17 |
+| 0.2 | +1.2 | 77.3 | 78.1 | 75.8 | 0.989 [0.979, 1.000] | 0.25 / 0.32 |
+| 0.3 | +1.8 | 75.0 | 76.2 | 73.3 | 0.985 [0.973, 0.996] | 0.36 / 0.45 |
+| 0.5 | +3.0 | 71.6 | 72.5 | 69.6 | 0.989 [0.977, 1.001] | 0.55 / 0.66 |
+
+## LM1B-medium: residual-gated V-cycle (m = 6; 3 seeds × 256 samples)
+
+Only the top-q samples by level-local residual are cycled; extra NFE is the mean per sample. Single pass 89.2, every sample cycled 68.0. *Share of gain*: fraction of the log-PPL gain of cycling every sample. Ratio: residual gate / random gate at the same q, paired bootstrap over samples.
+
+| q | Extra NFE | Residual gate | Random gate | Oracle gate (own NLL) | Residual / random [95% CI] | Share of gain: residual / oracle |
+|---|---|---|---|---|---|---|
+| 0.1 | +0.6 | 86.6 | 86.8 | 85.3 | 0.997 [0.988, 1.005] | 0.11 / 0.17 |
+| 0.2 | +1.2 | 83.7 | 84.5 | 81.9 | 0.991 [0.980, 1.002] | 0.23 / 0.32 |
+| 0.3 | +1.8 | 81.2 | 82.2 | 79.3 | 0.987 [0.975, 1.000] | 0.35 / 0.44 |
+| 0.5 | +3.0 | 77.2 | 77.9 | 74.5 | 0.991 [0.977, 1.004] | 0.53 / 0.66 |
+
+## LM1B-small: residual-gated V-cycle (m = 6; 3 seeds × 256 samples)
+
+Only the top-q samples by level-local residual are cycled; extra NFE is the mean per sample. Single pass 93.8, every sample cycled 79.8. *Share of gain*: fraction of the log-PPL gain of cycling every sample. Ratio: residual gate / random gate at the same q, paired bootstrap over samples.
+
+| q | Extra NFE | Residual gate | Random gate | Oracle gate (own NLL) | Residual / random [95% CI] | Share of gain: residual / oracle |
+|---|---|---|---|---|---|---|
+| 0.1 | +0.6 | 91.0 | 92.3 | 89.6 | 0.986 [0.977, 0.995] | 0.19 / 0.29 |
+| 0.2 | +1.2 | 89.4 | 90.8 | 86.9 | 0.985 [0.974, 0.994] | 0.30 / 0.47 |
+| 0.3 | +1.8 | 87.8 | 89.4 | 85.3 | 0.983 [0.972, 0.994] | 0.41 / 0.59 |
+| 0.5 | +3.0 | 85.2 | 86.5 | 82.1 | 0.985 [0.974, 0.996] | 0.59 / 0.82 |
+
+## TinyStories: residual-gated V-cycle (m = 6; 3 seeds × 256 samples)
+
+Only the top-q samples by level-local residual are cycled; extra NFE is the mean per sample. Single pass 16.4, every sample cycled 13.3. *Share of gain*: fraction of the log-PPL gain of cycling every sample. Ratio: residual gate / random gate at the same q, paired bootstrap over samples.
+
+| q | Extra NFE | Residual gate | Random gate | Oracle gate (own NLL) | Residual / random [95% CI] | Share of gain: residual / oracle |
+|---|---|---|---|---|---|---|
+| 0.1 | +0.6 | 15.8 | 16.1 | 15.8 | 0.985 [0.976, 0.992] | 0.17 / 0.20 |
+| 0.2 | +1.2 | 15.4 | 15.7 | 15.2 | 0.981 [0.972, 0.990] | 0.29 / 0.36 |
+| 0.3 | +1.8 | 15.1 | 15.4 | 14.8 | 0.980 [0.970, 0.989] | 0.40 / 0.49 |
+| 0.5 | +3.0 | 14.5 | 14.8 | 14.2 | 0.977 [0.968, 0.987] | 0.61 / 0.71 |
+
+Gating vs a finer restart level (LM1B-small, seed 42): gen. PPL (extra NFE per sample) when the top-q residual samples are cycled from level m; q = 1 cycles every sample. Single pass: 95.8.
+
+| m | q = 0.20 | q = 0.33 | q = 0.50 | q = 0.67 | q = 1.00 |
+|---|---|---|---|---|---|
+| 4 | 92.2 (+1.6) | 90.0 (+2.7) | 87.8 (+4.0) | 86.3 (+5.3) | 86.2 (+8.0) |
+| 6 | 90.4 (+1.2) | 88.1 (+2.0) | 85.5 (+3.0) | 83.9 (+4.0) | 79.9 (+6.0) |
+| 8 | 92.3 (+0.8) | 90.8 (+1.3) | 88.7 (+2.0) | 86.5 (+2.7) | 82.8 (+4.0) |
+| 10 | 93.3 (+0.4) | 92.4 (+0.7) | 90.9 (+1.0) | 90.3 (+1.3) | 88.2 (+2.0) |
+
+## LM1B-medium: quality beyond GPT-2 perplexity (seeds [0, 1, 42], pooled 768 samples)
+
+*Human*: held-out LM1B validation chunks (128 BERT ids, like the samples), scored the same way. Qwen2.5-1.5B: gen. PPL of the text without special tokens, up to 256 tokens. MAUVE: against the same number of human chunks, GPT-2-large features, full sets. Uncertainty from 50 rounds of paired half-size subsamples (without replacement; fresh k-means seed): the last column gives the full-set difference, then the half-size mean difference with its 2.5–97.5 percentiles and the share of rounds the V-cycle is ahead. Half-size MAUVE is not on the full-size scale; only differences compare.
+
+| Text | GPT-2 gen. PPL (FLM) | Qwen2.5-1.5B gen. PPL | Qwen2.5-1.5B ratio vs no-restrict [95% CI] | MAUVE ↑ | MAUVE − no-restrict |
+|---|---|---|---|---|---|
+| human | 53.5 | 40.3 | – | – | – |
+| baseline | 89.2 | 105.2 | – | 0.458 | – |
+| vcycle m=6 | 68.0 | 74.9 | 0.730 [0.713, 0.747] | 0.626 | +0.174; half-size +0.058 [-0.103, +0.189], ahead in 80% |
+| no-restrict m=6 | 86.9 | 102.6 | – | 0.452 | – |
+| vcycle m=8 | 77.4 | 87.9 | 0.840 [0.825, 0.854] | 0.612 | +0.138; half-size +0.037 [-0.147, +0.183], ahead in 66% |
+| no-restrict m=8 | 88.8 | 104.7 | – | 0.475 | – |
+
+Human cross-sample diversity: corpus distinct-2 0.718 per 256 chunks (samples: see the table above, per seed); entropy 4.311.
 

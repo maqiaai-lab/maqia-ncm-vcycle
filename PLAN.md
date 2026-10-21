@@ -266,3 +266,66 @@ Two container restarts interrupted the runs. Phase 2, Phase 3 and the LM1B diagn
 - **The residual is a useful training-free error detector** on both.
 
 All numbers are in `results/SUMMARY.md` and the README.
+
+### 2026-10-21 (local GPU session: medium seeds, iteration, quality checks, gating)
+
+**Environment.** Resumed locally: Windows 10, RTX 4050 Laptop (6 GB), torch 2.11.0+cu128, transformers 5.20.
+- **GPU equivalence.** Sudoku-hard: the uncached `LevelDecoder` matches `generate()` code for code on all 2,000 boards. The cached-prompt path differs on 1 board, at a near-tie (top-2 logit margin 2.9e-6), so `phase0_baseline.py`'s assert fires on GPU; nothing was written. GPU vs the committed CPU greedy pass: 165 boards differ in codes but only 12 in tokens; solved 86.25% vs 86.30%. LM1B: `LevelDecoder == generate()` holds on GPU for small, medium and large (8 samples, T=1).
+- **GPU scoring = CPU scoring.** Re-scoring the committed CPU samples (small, seed 42) on GPU with transformers 5.20: per-sample NLL max relative difference 3.5e-7, corpus PPL 95.808 on both. Decoding the committed codes on GPU changes 0.07% of tokens (near-ties in token picking). GPU and CPU seeds can be pooled; the same seed does *not* give the same samples (CUDA RNG).
+- **VRAM.** Generator + tokenizer + GPT-2 large exceed 6 GB, and on Windows the driver spills to system memory instead of failing. `LM1B.nll` now parks the generator on the CPU while scoring (automatic below 16 GB of VRAM). LM1B-large then runs without spilling (generation 63 s vs 25 s for medium per 256 samples).
+- **Speed.** One LM1B-medium seed with `--vcycle 6,8`: about 6 min (43 min on 4 CPU cores).
+
+**LM1B-medium, 3 seeds** (42 on CPU from the cloud run; 0 and 1 on GPU), pooled paired bootstrap over 768 samples:
+- Gen. PPL: single pass 90.7 / 87.1 / 89.9 (mean 89.2). V-cycle m=6: 69.6 / 65.9 / 68.5 (68.0). No-restrict m=6: 87.5 / 86.9 / 86.3 (86.9).
+- **V-cycle / no-restrict: m=6 0.783 [0.765, 0.802]; m=8 0.871 [0.858, 0.886].** The single-seed m=6 figure was 0.796 [0.765, 0.825].
+- Residual AUROC (worst-NLL decile, level-local): 0.640 (mean of 3 seeds).
+- Bootstrap note: the LM1B-small CIs moved in the third decimal (e.g. [0.839, 0.877] → [0.839, 0.876]) without any change in data, because every section drew from one RNG and the medium section now draws more (N_BOOT = 1000 Monte Carlo noise). `analyze.py` now gives each text section its own generator, seeded from its name, so a section's CIs no longer depend on which other results exist. The Sudoku sections still use the shared generator first and are byte-identical to before.
+
+**LM1B-large, 3 seeds** (GPU; the same tokenizer as small and medium):
+- Gen. PPL: single pass 80.1 / 81.4 / 85.1 (seeds 42 / 0 / 1; mean 82.2). V-cycle m=6: 63.4 / 63.1 / 65.2 (63.9). No-restrict m=6: 80.4 / 79.5 / 79.3 (79.8).
+- **V-cycle / no-restrict: m=6 0.801 [0.784, 0.818]; m=8 0.888 [0.874, 0.901].** Entropy 4.340 → 4.344; corpus distinct-2 0.582 → 0.555.
+- The ratio does not shrink with scale: 0.857 (small), 0.783 (medium), 0.801 (large).
+- Residual AUROC (worst-NLL decile, level-local): 0.678.
+
+**TinyStories, 3 seeds** (step 5; `lm1b_diagnostic.py --task tinystories`; genppl protocol; GPU):
+- `LevelDecoder == generate()` on 8 TinyStories samples, the first check of the `query_level0: false` path.
+- Gen. PPL: single pass 15.9 / 16.3 / 17.1 (seeds 42 / 0 / 1; mean 16.4). V-cycle m=6: 13.1 / 13.3 / 13.6 (13.3). No-restrict m=6: 16.1 / 16.2 / 17.1 (16.5).
+- **V-cycle / no-restrict: m=6 0.809 [0.797, 0.821]; m=8 0.915 [0.905, 0.924].** Entropy 3.960 → 3.956; per-sample distinct-2 0.895 → 0.890; corpus distinct-2 0.329 → 0.317; adjacent repeats 0.65% → 0.48%.
+- **The residual is a stronger detector here:** round-trip disagreement vs per-token NLL ρ = +0.52, AUROC 0.81 for the worst-NLL decile. Fixed-point rate 0%.
+- **Gating is significant but small,** as on LM1B-small: residual / random gate 0.981 [0.972, 0.990] at q = 0.2.
+- **Here no-restrict keeps more of the content** than on LM1B (the generated coarse codes disagree with the encoder less: 0.6–0.8 at levels 2–10, against 0.85–0.97 on LM1B), yet it still does not improve fluency.
+- Example edits (seed 0): "there made a little girl" → "there was a little girl"; "so sad and and scared" → "so sad and scared"; `said "ooIs?"` → `said "What happened?"`. Not always consistent: another story's "thin bug named Tim" becomes "thin cat" while his friend stays "Sam the bug".
+- `analyze.py` now decodes the TinyStories examples with its BPE tokenizer (decoding them with BERT's vocabulary gave `[unused…]` tokens).
+- The NCM README links an OWT checkpoint, but `hazyresearch/ncm-checkpoints` has only `owt/TODO.md`.
+- No paper TinyStories number was checked against this baseline.
+
+**Step 4: is lower GPT-2 PPL better text?** (`experiments/lm1b_quality.py`, medium, 3 seeds × 256.)
+- **Human anchor:** 768 held-out LM1B validation chunks score gen. PPL **53.5** under the same FLM protocol (Qwen2.5-1.5B: **40.3**), entropy 4.311, corpus distinct-2 0.718 per 256 chunks (NCM: about 0.58). One V-cycle (68.0) is still well above human; it repairs, it does not over-smooth. See the iteration results below for where that changes.
+- **Second scorer, a different model family** (Qwen2.5-1.5B, text without special tokens, ≤ 256 tokens): single pass 105.2, no-restrict m=6 102.6, **V-cycle m=6 74.9**; V-cycle / no-restrict **0.730 [0.713, 0.747]** (m=8: 0.840 [0.825, 0.854]). Larger than under GPT-2: the gain is not a GPT-2 artifact.
+- **MAUVE** vs human chunks (GPT-2-large features, pooled 768 vs 768): single pass 0.458, no-restrict m=6 0.452, **V-cycle m=6 0.626**, V-cycle m=8 0.612, no-restrict m=8 0.475. Per seed (256 vs 256) it is noisy: single pass 0.66 / 0.71 / 0.71 vs V-cycle 0.64 / 0.73 / 0.84.
+- **MAUVE uncertainty (`experiments/lm1b_mauve.py`): directional, not significant.**
+  - A first attempt bootstrapped *with replacement* and was discarded. Its intervals excluded their own point estimates (V-cycle m=6: 0.626, interval [0.406, 0.599]): duplicated points distort MAUVE's k-means quantization and bias it down.
+  - Replacement: 50 rounds of paired half-size subsamples without replacement, fresh k-means seed each round. V-cycle − no-restrict, m=6: full sets +0.174; half-size mean +0.058 [−0.103, +0.189]; the V-cycle is ahead in 80% of rounds. At m=8: +0.138; +0.037 [−0.147, +0.183]; 66%. V-cycle − single pass, m=6: +0.098 [−0.052, +0.239], 88%.
+  - Conclusion: MAUVE agrees in direction with both perplexity scorers, but 768 samples cannot resolve it. That would need several thousand per variant.
+
+**Step 2: iterating the V-cycle** (`experiments/lm1b_converge.py`, seed 42, 256 samples, 6 cycles; GPU draws, so cycle 1 differs from the CPU sweep: small m=6 82.7 here vs 79.9 there).
+
+| | Cycle 0 → 1 → 3 → 6: gen. PPL | Corpus distinct-2, cycle 0 → 6 | Token agreement with draft / previous cycle, cycle 6 | Kept-level round-trip disagreement, cycle 0 → 1 → 6 |
+|---|---|---|---|---|
+| small, m=6 | 95.8 → 82.7 → 75.8 → 72.1 | 0.505 → 0.441 (−13%) | 0.14 / 0.49 (no-restrict: 0.15) | 0.94 → 0.69 → 0.55 |
+| small, m=8 | 95.8 → 83.2 → 72.1 → 66.4 | 0.505 → 0.457 (−10%) | 0.55 / 0.89 | 0.90 → 0.43 → 0.24 |
+| medium, m=6 | 90.7 → 70.1 → 58.7 → 51.9 | 0.586 → 0.510 (−13%) | 0.27 / 0.70 (no-restrict: 0.21) | 0.87 → 0.55 → 0.38 |
+| medium, m=8 | 90.7 → 78.5 → 70.0 → 65.1 | 0.586 → 0.552 (−6%) | 0.73 / 0.95 | 0.84 → 0.28 → 0.12 |
+
+- **No exact fixed points** (0% of samples at every cycle; at most 2.7% have the kept coarse levels exactly round-trip). But the *graded* residual contracts, roughly geometrically, toward a floor: multigrid-like.
+- **The restart level decides the regime.** From m=8 the chain converges: successive cycles agree on 95% of tokens (medium), most of the draft survives, and the diversity cost stays at 6%. From m=6 it keeps drifting: after 6 cycles the text shares no more with the draft than the no-restrict control does, diversity falls 13%, and medium's PPL (51.9) ends *below* human text (53.5), a sign of over-smoothing.
+- **Still beyond the temperature frontier.** NCM cannot buy lower PPL with temperature: T=0.9 gives 82.5, T=0.8 gives 82.6 (with distinct-2 0.464 and 0.433). At distinct-2 0.464, four V-cycles from m=8 reach 70.0.
+- `analyze.py` adds a table per run and `results/lm1b_{size}_converge.png`.
+
+**Step 3: residual-gated V-cycle on text** (computed from the diagnostic caches, no new sampling; gate = top-q by level-local residual summed over levels, as in Sudoku Phase 2).
+- **Small (3 seeds):** the residual gate beats a random gate at equal compute, but only by about 1.5% PPL: ratio 0.985 [0.974, 0.994] at q = 0.2 (89.4 vs 90.8). Cycling the top 20% captures 30% of the full log-PPL gain; an oracle gate on the sample's own GPT-2 NLL captures 47%.
+- **Medium (3 seeds):** not significant: 0.991 [0.980, 1.002] at q = 0.2.
+- **Gating is no better than a finer restart level** (small, seed 42): at +2 NFE, every sample from m=10 gives 88.2 and the top third from m=6 gives 88.1; at +4 NFE, every sample from m=8 gives 82.8 and the top two thirds from m=6 give 83.9.
+- **Null result:** on text the V-cycle helps nearly every sample, so a gate cannot concentrate the gain. The residual remains a useful detector (AUROC 0.64–0.74) but not a useful compute gate.
+
+**Step 5 groundwork.** OWT has no released checkpoint (`ncm-checkpoints` holds only `owt/TODO.md`). TinyStories is released. `LevelDecoder` now supports `query_level0: false` (offsets from level 1; heads, RoPE and post-upsample convs indexed k − 1, as in `generate()`). `load()` points BPE tokenizers at their files. The text helpers follow the config's `eval.metric` (`genppl` for TinyStories: cut at the first EOS, whole text scored). The BPE pickles were checked with `pickletools`: dicts of int → bytes and lists of byte tuples, no import or call opcodes. On LM1B paths the new code is identical to the old (checked on random logits and ids).

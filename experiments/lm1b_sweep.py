@@ -45,7 +45,7 @@ variant_ids = {}
 def record(name, new_ids, extra_nfe):
     nl, nt = lm.nll(new_ids)
     r = lm.corpus(nl, nt, lm.quality(new_ids))
-    r["corpus_distinct2"], r["corpus_distinct3"] = corpus_distinct(new_ids, lm.pad, 2), corpus_distinct(new_ids, lm.pad, 3)
+    r["corpus_distinct2"], r["corpus_distinct3"] = corpus_distinct(new_ids, lm.pad, 2, lm.cut_eos), corpus_distinct(new_ids, lm.pad, 3, lm.cut_eos)
     r["extra_nfe"] = extra_nfe
     out["variants"][name] = r
     per_sample[name], variant_ids[name] = (nl, nt), new_ids
@@ -57,7 +57,7 @@ def record(name, new_ids, extra_nfe):
 
 nb = base["ids"]
 r0 = lm.corpus(*base["per_sample_nll"]["baseline"], lm.quality(nb))
-r0["corpus_distinct2"], r0["corpus_distinct3"] = corpus_distinct(nb, lm.pad, 2), corpus_distinct(nb, lm.pad, 3)
+r0["corpus_distinct2"], r0["corpus_distinct3"] = corpus_distinct(nb, lm.pad, 2, lm.cut_eos), corpus_distinct(nb, lm.pad, 3, lm.cut_eos)
 r0["extra_nfe"] = 0
 out["variants"]["baseline"] = r0
 

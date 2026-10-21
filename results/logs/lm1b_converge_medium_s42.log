@@ -1,0 +1,18 @@
+W1021 12:39:03.640000 15216 .venv\Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+Loading weights:   0%|          | 0/436 [00:00<?, ?it/s]Loading weights:   6%|5         | 24/436 [00:00<00:01, 221.65it/s]Loading weights:  11%|#         | 47/436 [00:00<00:02, 168.08it/s]Loading weights:  15%|#4        | 65/436 [00:00<00:03, 116.01it/s]Loading weights:  18%|#8        | 79/436 [00:00<00:03, 93.46it/s] Loading weights:  21%|##1       | 92/436 [00:00<00:03, 93.94it/s]Loading weights:  24%|##3       | 104/436 [00:00<00:03, 99.14it/s]Loading weights:  26%|##6       | 115/436 [00:01<00:04, 79.04it/s]Loading weights:  29%|##9       | 127/436 [00:01<00:03, 84.55it/s]Loading weights:  31%|###1      | 137/436 [00:01<00:03, 86.32it/s]Loading weights:  35%|###4      | 151/436 [00:01<00:02, 98.59it/s]Loading weights:  37%|###7      | 162/436 [00:01<00:02, 91.49it/s]Loading weights:  40%|####      | 176/436 [00:01<00:02, 99.59it/s]Loading weights:  44%|####4     | 193/436 [00:01<00:02, 108.85it/s]Loading weights:  47%|####7     | 205/436 [00:02<00:02, 109.53it/s]Loading weights:  50%|####9     | 217/436 [00:02<00:02, 99.24it/s] Loading weights:  52%|#####2    | 228/436 [00:02<00:02, 82.31it/s]Loading weights:  55%|#####5    | 240/436 [00:02<00:02, 90.20it/s]Loading weights:  59%|#####9    | 259/436 [00:02<00:01, 108.77it/s]Loading weights:  62%|######2   | 271/436 [00:02<00:02, 68.12it/s] Loading weights: 100%|##########| 436/436 [00:02<00:00, 148.72it/s]
+no-restrict m=6        ppl   89.5  H 4.339  corpus-d2 0.582  fp 0.000  coarse-fp 0.000  agree draft/prev 0.207/0.207
+m=6 c=0                ppl   90.7  H 4.343  corpus-d2 0.586  fp 0.000  coarse-fp 0.000  agree draft/prev 1.000/1.000
+m=6 c=1                ppl   70.1  H 4.347  corpus-d2 0.553  fp 0.000  coarse-fp 0.000  agree draft/prev 0.527/0.527
+m=6 c=2                ppl   62.9  H 4.352  corpus-d2 0.540  fp 0.000  coarse-fp 0.000  agree draft/prev 0.411/0.602
+m=6 c=3                ppl   58.7  H 4.349  corpus-d2 0.528  fp 0.000  coarse-fp 0.000  agree draft/prev 0.354/0.641
+m=6 c=4                ppl   55.8  H 4.352  corpus-d2 0.526  fp 0.000  coarse-fp 0.000  agree draft/prev 0.318/0.671
+m=6 c=5                ppl   53.2  H 4.352  corpus-d2 0.514  fp 0.000  coarse-fp 0.000  agree draft/prev 0.290/0.683
+m=6 c=6                ppl   51.9  H 4.357  corpus-d2 0.510  fp 0.000  coarse-fp 0.000  agree draft/prev 0.271/0.698
+no-restrict m=8        ppl   89.7  H 4.347  corpus-d2 0.586  fp 0.000  coarse-fp 0.000  agree draft/prev 0.565/0.565
+m=8 c=0                ppl   90.7  H 4.343  corpus-d2 0.586  fp 0.000  coarse-fp 0.000  agree draft/prev 1.000/1.000
+m=8 c=1                ppl   78.5  H 4.345  corpus-d2 0.569  fp 0.000  coarse-fp 0.000  agree draft/prev 0.863/0.863
+m=8 c=2                ppl   72.5  H 4.348  corpus-d2 0.560  fp 0.000  coarse-fp 0.000  agree draft/prev 0.815/0.911
+m=8 c=3                ppl   70.0  H 4.350  corpus-d2 0.558  fp 0.000  coarse-fp 0.000  agree draft/prev 0.784/0.929
+m=8 c=4                ppl   67.3  H 4.351  corpus-d2 0.554  fp 0.000  coarse-fp 0.012  agree draft/prev 0.764/0.944
+m=8 c=5                ppl   66.4  H 4.352  corpus-d2 0.553  fp 0.000  coarse-fp 0.012  agree draft/prev 0.747/0.949
+m=8 c=6                ppl   65.1  H 4.354  corpus-d2 0.552  fp 0.000  coarse-fp 0.027  agree draft/prev 0.733/0.952

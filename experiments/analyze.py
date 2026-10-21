@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+import zlib
 
 import numpy as np
 import torch
@@ -18,10 +19,17 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from vcycle.common import RESULTS
 
+sys.stdout.reconfigure(encoding="utf-8")  # the tables use non-ASCII (−, ×, …); Windows consoles default to cp1252
+
 PAPER = {"hard": 86.1}  # NCM Sudoku-hard solved %, paper Fig. (12 NFE)
 BUDGETS = [13, 14, 15, 16]  # every method and seed reaches 16 NFE within its 8 rounds
 N_BOOT = 1000
-rng = np.random.default_rng(0)
+rng = np.random.default_rng(0)  # Sudoku sections, in file order
+
+
+def section_rng(name):
+    """Bootstrap generator for one text section, so its CIs do not depend on which other results exist."""
+    return np.random.default_rng(zlib.crc32(name.encode()))
 
 
 def load(name):
@@ -223,17 +231,20 @@ for gname, seeds in groups.items():
 
 # ---- LM1B ---------------------------------------------------------------------------------------
 lm = {}
-for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_*_s*.json"))):
-    if os.path.basename(path).startswith("lm1b_sweep_"):
+TEXT_NAME = lambda size: "TinyStories" if size == "tinystories" else f"LM1B-{size}"
+for path in sorted(glob.glob(os.path.join(RESULTS, "*_s*.json"))):
+    if not re.fullmatch(r"(lm1b_[a-z]+|tinystories)_s\d+\.json", os.path.basename(path)):  # diagnostic runs, not sweep/converge
         continue
     r = json.load(open(path))
     cache = os.path.join(RESULTS, "cache", os.path.basename(path)[:-5] + ".pt")
     lm.setdefault(r["size"], []).append((r, torch.load(cache, weights_only=False) if os.path.exists(cache) else None))
 for size, runs in lm.items():
     variants = ["baseline"] + list(runs[0][0]["vcycle"])
-    lines += [f"## LM1B-{size}: residual diagnostic and V-cycle ({len(runs)} seed{'s' if len(runs) > 1 else ''} × {runs[0][0]['n']} samples)", "",
-              "Gen. PPL is corpus-level under GPT-2 large (FLM protocol, as in the paper); entropy is the mean per-sample "
-              "unigram entropy of the raw ids. V-cycle and no-restriction resample levels m..K-1 once, at T=1, from the same "
+    protocol = "genppl protocol: samples cut at the first EOS" if size == "tinystories" else "FLM protocol"
+    lines += [f"## {TEXT_NAME(size)}: residual diagnostic and V-cycle ({len(runs)} seed{'s' if len(runs) > 1 else ''} × {runs[0][0]['n']} samples)", "",
+              f"Gen. PPL is corpus-level under GPT-2 large ({protocol}, as in the paper); entropy is the mean per-sample "
+              f"unigram entropy of the {'tokens before the first EOS' if size == 'tinystories' else 'raw ids'}. V-cycle and "
+              "no-restriction resample levels m..K-1 once, at T=1, from the same "
               "baseline samples, so they cost the same (K-m extra NFE).", "",
               "| Variant | Extra NFE | Gen. PPL (per seed) | Gen. PPL mean | Entropy | Adjacent repeats | distinct-2 | [PAD] fraction |",
               "|---|---|---|---|---|---|---|---|"]
@@ -250,7 +261,7 @@ for size, runs in lm.items():
         pooled = {v: (np.concatenate([c["per_sample_nll"][v][0] for _, c in runs]),
                       np.concatenate([c["per_sample_nll"][v][1] for _, c in runs])) for v in variants}
         N = len(pooled["baseline"][0])
-        idx = rng.integers(0, N, size=(N_BOOT, N))
+        idx = section_rng(f"diag_{size}").integers(0, N, size=(N_BOOT, N))
         cppl = lambda v, ix: np.exp(pooled[v][0][ix].sum(-1) / pooled[v][1][ix].sum(-1))
         comps = [(v, "baseline") for v in variants[1:]]
         comps += [(v, v.replace("vcycle", "no-restrict")) for v in variants if v.startswith("vcycle")]
@@ -285,7 +296,22 @@ for size, runs in lm.items():
                 lines.append(f"| {show(v)} | {x['corpus_distinct2']:.3f} | {x['corpus_distinct3']:.3f} |")
         lines.append("")
         from transformers import AutoTokenizer
-        btok = AutoTokenizer.from_pretrained("bert-base-uncased")
+        if size == "tinystories":  # the released BPE tokenizer (its pickles were checked with pickletools)
+            from omegaconf import OmegaConf
+            from vcycle.common import ARTIFACTS
+            from vcycle.loading import import_ncm
+            import_ncm()
+            from tokenization.bpe_tokenizer import BPETokenizer
+            ck_ = os.path.join(ARTIFACTS, "tinystories")
+            cf_ = OmegaConf.load(os.path.join(ck_, "config.yaml"))
+            pt_ = cf_.tokenizer.pre_tokenizer
+            pt_.vocab_file_path, pt_.merges_file_path = (os.path.join(ck_, cf_.checkpoints.bpe_vocab),
+                                                         os.path.join(ck_, cf_.checkpoints.bpe_merges))
+            bpe = BPETokenizer.from_config(pt_)
+            show_text = lambda ids: bpe.decode([t for t in ids if t not in (bpe.eos_token_id, bpe.pad_token_id)]).replace("\n", " / ")
+        else:
+            btok = AutoTokenizer.from_pretrained("bert-base-uncased")
+            show_text = lambda ids: btok.decode(ids).replace("[CLS]", " / ").replace("[PAD]", "")
         best = min((v for v in c["variant_ids"] if v.startswith("vcycle")),
                    key=lambda v: rr["vcycle"][v]["gen_ppl"])
         ctrl = best.replace("vcycle", "no-restrict")
@@ -294,7 +320,7 @@ for size, runs in lm.items():
             for name, ids_ in (("baseline", c["ids"]), (best, c["variant_ids"][best]), (ctrl, c["variant_ids"].get(ctrl))):
                 if ids_ is None:
                     continue
-                txt = btok.decode(ids_[i].tolist()).replace("[CLS]", " / ").replace("[PAD]", "").strip()
+                txt = show_text(ids_[i].tolist()).strip()
                 lines.append(f"- *{show(name)}*: {txt[:300]}")
             lines.append("")
     summary[f"lm1b_{size}"] = [rr for rr, _ in runs]
@@ -311,7 +337,7 @@ for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_sweep_*_s*.json"))):
               "| Variant | Extra NFE | Gen. PPL | Ratio vs no-restrict [95% CI] | Entropy | distinct-2 (corpus) | Adjacent repeats |",
               "|---|---|---|---|---|---|---|"]
     N = len(next(iter(ps.values()))[0]) if ps else 0
-    idx = rng.integers(0, N, size=(N_BOOT, N)) if N else None
+    idx = section_rng(os.path.basename(path)).integers(0, N, size=(N_BOOT, N)) if N else None
     for name, r in sw["variants"].items():
         ratio = "–"
         ctrl = re.sub(r"^vcycle\|m=(\d+)\|c=\d+$", r"no-restrict|m=\1|c=1", name)
@@ -417,8 +443,222 @@ for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_sweep_*_s*.json"))):
         fig.savefig(out_png, facecolor=surf)
         print("chart:", out_png)
 
-with open(os.path.join(RESULTS, "SUMMARY.md"), "w") as f:
+# ---- LM1B iterated V-cycles (convergence) -----------------------------------------------------------
+for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_converge_*_s*.json"))):
+    cv = json.load(open(path))
+    cache = os.path.join(RESULTS, "cache", os.path.basename(path)[:-5] + ".pt")
+    ps = torch.load(cache, weights_only=False)["per_sample_nll"] if os.path.exists(cache) else {}
+    N = cv["n"]
+    idx = section_rng(os.path.basename(path)).integers(0, N, size=(N_BOOT, N))
+    cp = lambda v, ix: np.exp(ps[v][0][ix].sum(-1) / ps[v][1][ix].sum(-1))
+
+    def ratio(a_, b_):
+        if a_ not in ps or b_ not in ps:
+            return "–"
+        b = cp(a_, idx) / cp(b_, idx)
+        return f"{cp(a_, np.arange(N)) / cp(b_, np.arange(N)):.3f} [{np.percentile(b, 2.5):.3f}, {np.percentile(b, 97.5):.3f}]"
+
+    lines += [f"## LM1B-{cv['size']}: iterated V-cycles (seed {cv['seed']}, {N} samples, {cv.get('device', 'cpu')})", "",
+              "Each cycle re-encodes the newest sample, keeps encode(x)_{<m} and resamples levels m..K-1 at T=1. Ratios "
+              "compare corpus gen. PPL, paired bootstrap over samples. *Coarse FP*: share of samples whose re-encoded "
+              "levels < m equal the codes they were generated from (a coarse fixed point). *Agree*: positional token "
+              "agreement with the original draft / with the previous cycle.", "",
+              "| m | Cycle | Extra NFE | Gen. PPL | Ratio vs no-restrict [95% CI] | Ratio vs previous cycle [95% CI] | Entropy "
+              "| distinct-2 (corpus) | Coarse FP | Agree draft / prev |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
+    for key, run in cv["runs"].items():
+        nr = run.get("no_restrict")
+        if nr:
+            lines.append(f"| {run['m']} | no-restrict | +{nr['extra_nfe']} | {nr['gen_ppl']:.1f} | – | – | {nr['entropy']:.3f} | "
+                         f"{nr['corpus_distinct2']:.3f} | {pct(nr['coarse_fixed_point_rate'])}% | {nr['agree_draft']:.3f} / – |")
+        for r in run["cycles"]:
+            i = r["cycle"]
+            vs_nr = ratio(f"{key}|c={i}", f"no-restrict|{key}") if i else "–"
+            vs_prev = ratio(f"{key}|c={i}", f"{key}|c={i - 1}") if i else "–"
+            lines.append(f"| {run['m']} | {i} | +{r['extra_nfe']} | {r['gen_ppl']:.1f} | {vs_nr} | {vs_prev} | {r['entropy']:.3f} | "
+                         f"{r['corpus_distinct2']:.3f} | {pct(r['coarse_fixed_point_rate'])}% | "
+                         f"{r['agree_draft']:.3f} / {r['agree_prev']:.3f} |")
+    lines.append("")
+    summary[f"lm1b_converge_{cv['size']}_s{cv['seed']}"] = cv
+
+    # Chart: two panels, one scale each. Left: PPL against compute. Right: PPL against cross-sample diversity, with
+    # NCM's own temperature frontier when the sweep has it for this size and seed. Gray and green never share a panel.
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError:
+        continue
+    ink, ink2, grid, axis, surf, blue, green, gray = "#0b0b0b", "#52514e", "#e1e0d9", "#c3c2b7", "#fcfcfb", "#2a78d6", "#1baf7a", "#898781"
+    style = {8: "-", 6: (0, (4, 2))}
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(10.4, 4.3), dpi=160)
+    fig.patch.set_facecolor(surf)
+    runs_ = sorted(cv["runs"].values(), key=lambda r: -r["m"])
+    base_ppl = runs_[0]["cycles"][0]["gen_ppl"]
+    for run in runs_:
+        cy, ls = run["cycles"], style.get(run["m"], ":")
+        xs, ys = [r["extra_nfe"] for r in cy], [r["gen_ppl"] for r in cy]
+        axl.plot(xs, ys, color=blue, lw=2, ls=ls, marker="o", ms=4.5, mec=surf, mew=1, zorder=3,
+                 label=f"V-cycle, m = {run['m']} (one point per cycle)")
+        axl.annotate(f"m = {run['m']}, ×{cy[-1]['cycle']}", (xs[-1], ys[-1]), xytext=(6, 0), textcoords="offset points",
+                     va="center", fontsize=7.5, color=ink2)
+        d2, pp = [r["corpus_distinct2"] for r in cy], [r["gen_ppl"] for r in cy]
+        axr.plot(d2, pp, color=blue, lw=2, ls=ls, marker="o", ms=4.5, mec=surf, mew=1, zorder=3,
+                 label=f"V-cycle, m = {run['m']}, cycles 0–{cy[-1]['cycle']}")
+        axr.annotate(f"m = {run['m']} ×{cy[-1]['cycle']}", (d2[-1], pp[-1]), xytext=(0, -12), textcoords="offset points",
+                     ha="center", fontsize=7.5, color=ink2)
+    nr = [(r["no_restrict"]["extra_nfe"], r["no_restrict"]["gen_ppl"], r["m"]) for r in runs_ if "no_restrict" in r]
+    if nr:
+        axl.scatter([x for x, _, _ in nr], [y for _, y, _ in nr], s=36, marker="s", color=green, edgecolor=surf, linewidth=1,
+                    zorder=4, label="No restriction, same levels (one redraw)")
+        for x, y, m_ in nr:
+            on_base = abs(y - base_ppl) < 1.0  # keep the label off the dashed single-pass line
+            axl.annotate(f"no restriction, m = {m_}", (x, y), xytext=(7, 6) if on_base else (7, 0), textcoords="offset points",
+                         va="bottom" if on_base else "center", fontsize=7.5, color=ink2)
+    axl.axhline(base_ppl, color=axis, lw=1, ls=(0, (4, 3)), zorder=1)
+    xmax_l = max(r["cycles"][-1]["extra_nfe"] for r in runs_) * 1.15 + 1
+    axl.annotate(f"NCM single pass: {base_ppl:.1f}", (xmax_l, base_ppl), xytext=(0, 4), textcoords="offset points", ha="right",
+                 fontsize=8, color=ink2)
+    sw_path = os.path.join(RESULTS, f"lm1b_sweep_{cv['size']}_s{cv['seed']}.json")
+    if os.path.exists(sw_path):
+        V = json.load(open(sw_path))["variants"]
+        fr = sorted([(1.0, V["baseline"])] + [(float(k.split("T=")[1]), r) for k, r in V.items() if k.startswith("baseline|T=")],
+                    reverse=True)
+        axr.plot([r["corpus_distinct2"] for _, r in fr], [r["gen_ppl"] for _, r in fr], color=gray, lw=2, marker="o", ms=5,
+                 mec=surf, mew=1, zorder=2, label="NCM, lower sampling temperature")
+        for T, r in fr:
+            axr.annotate(f"T = {T:g}" + (" (NCM default)" if T == 1.0 else ""), (r["corpus_distinct2"], r["gen_ppl"]),
+                         xytext=(-6, 4) if T == 1.0 else (0, 7), textcoords="offset points", ha="right" if T == 1.0 else "center",
+                         fontsize=7.5, color=ink2)
+    for ax_, xl, title in ((axl, "Extra generator forward passes per sample (one NCM pass = 11)", "Gen. perplexity vs compute"),
+                           (axr, "Corpus distinct-2 across samples (higher = more diverse)", "Gen. perplexity vs diversity")):
+        ax_.set_facecolor(surf)
+        ax_.set_xlabel(xl, color=ink2, fontsize=8.5)
+        ax_.set_ylabel("Gen. perplexity (GPT-2 large), lower is better", color=ink2, fontsize=8.5)
+        ax_.set_title(title, color=ink, fontsize=9.5, loc="left")
+        ax_.grid(True, color=grid, lw=0.6)
+        for side in ("top", "right"):
+            ax_.spines[side].set_visible(False)
+        for side in ("left", "bottom"):
+            ax_.spines[side].set_color(axis)
+        ax_.tick_params(colors=ink2, labelsize=8)
+    axl.legend(frameon=False, fontsize=7.5, labelcolor=ink2, loc="upper right", bbox_to_anchor=(1.0, 0.8))
+    axr.legend(frameon=False, fontsize=7.5, labelcolor=ink2, loc="upper left")
+    axl.set_xlim(-0.5, xmax_l)
+    lo = min(r["gen_ppl"] for run in runs_ for r in run["cycles"])
+    for ax_ in (axl, axr):
+        ax_.set_ylim(lo - 7, base_ppl + 6)  # room for the end labels under the lowest point
+    x0, x1 = axr.dataLim.x0, axr.dataLim.x1
+    axr.set_xlim(x0 - 0.08 * (x1 - x0), x1 + 0.04 * (x1 - x0))
+    fig.suptitle(f"LM1B-{cv['size']}: iterating the V-cycle (seed {cv['seed']}, {N} samples)", color=ink, fontsize=10.5,
+                 x=0.01, ha="left")
+    fig.tight_layout()
+    out_png = os.path.join(RESULTS, f"lm1b_{cv['size']}_converge.png")
+    fig.savefig(out_png, facecolor=surf)
+    plt.close(fig)
+    print("chart:", out_png)
+
+# ---- LM1B residual-gated V-cycle (from the diagnostic caches, no new sampling) ----------------------
+# The gate cycles only the samples whose level-local residual (summed over levels, as in Sudoku Phase 2) is in
+# the top q of their seed; the rest keep the single-pass sample. Controls at equal expected compute: a random
+# gate of rate q (ratio of expectations over the gate) and, as an upper bound that is not free, an oracle gate
+# on the single-pass sample's own GPT-2 NLL.
+GATE_LM = (0.1, 0.2, 0.3, 0.5)
+for size, runs in lm.items():
+    caches = [c for _, c in runs if c is not None and "loc" in c]
+    m_gate, K_lm = 6, len(runs[0][0]["levels"])
+    if not caches or not all(f"vcycle|m={m_gate}" in c["per_sample_nll"] for c in caches):
+        continue
+    cat = lambda k, j: np.concatenate([np.asarray(c["per_sample_nll"][k][j], float) for c in caches])
+    nb, tb, nv, tv = cat("baseline", 0), cat("baseline", 1), cat(f"vcycle|m={m_gate}", 0), cat(f"vcycle|m={m_gate}", 1)
+    score = [c["loc"].sum(1).numpy() for c in caches]
+    own = [np.asarray(c["per_sample_nll"]["baseline"][0], float) / np.maximum(np.asarray(c["per_sample_nll"]["baseline"][1], float), 1)
+           for c in caches]
+    top = lambda xs, q: np.concatenate([x >= np.quantile(x, 1 - q) for x in xs])
+    N = len(nb)
+    idx = section_rng(f"gate_{size}").integers(0, N, size=(N_BOOT, N))
+    mixed = lambda g, ix: np.exp(np.where(g, nv, nb)[ix].sum(-1) / np.where(g, tv, tb)[ix].sum(-1))
+    rand = lambda q, ix: np.exp(((1 - q) * nb + q * nv)[ix].sum(-1) / ((1 - q) * tb + q * tv)[ix].sum(-1))
+    full = np.arange(N)
+    p_base, p_all = mixed(np.zeros(N, bool), full), mixed(np.ones(N, bool), full)
+    lines += [f"## {TEXT_NAME(size)}: residual-gated V-cycle (m = {m_gate}; {len(caches)} seed{'s' if len(caches) > 1 else ''} × "
+              f"{N // len(caches)} samples)", "",
+              f"Only the top-q samples by level-local residual are cycled; extra NFE is the mean per sample. Single pass "
+              f"{p_base:.1f}, every sample cycled {p_all:.1f}. *Share of gain*: fraction of the log-PPL gain of cycling every "
+              "sample. Ratio: residual gate / random gate at the same q, paired bootstrap over samples.", "",
+              "| q | Extra NFE | Residual gate | Random gate | Oracle gate (own NLL) | Residual / random [95% CI] | Share of gain: residual / oracle |",
+              "|---|---|---|---|---|---|---|"]
+    gain = lambda p: np.log(p_base / p) / np.log(p_base / p_all)
+    gate_summary = {}
+    for q in GATE_LM:
+        g, go = top(score, q), top(own, q)
+        pr, pq, po = mixed(g, full), rand(q, full), mixed(go, full)
+        b = mixed(g, idx) / rand(q, idx)
+        ci = [float(np.percentile(b, 2.5)), float(np.percentile(b, 97.5))]
+        lines.append(f"| {q:g} | +{q * (K_lm - m_gate):.1f} | {pr:.1f} | {pq:.1f} | {po:.1f} | {pr / pq:.3f} [{ci[0]:.3f}, {ci[1]:.3f}] | "
+                     f"{gain(pr):.2f} / {gain(po):.2f} |")
+        gate_summary[q] = {"residual": pr, "random": pq, "oracle": po, "ratio": pr / pq, "ci": ci}
+    lines.append("")
+    summary[f"lm1b_gate_{size}"] = gate_summary
+
+# Same seed as the sweep: is gating at m = 6 a better use of compute than restarting every sample at a finer level?
+for path in sorted(glob.glob(os.path.join(RESULTS, "cache", "lm1b_sweep_*_s*.pt"))):
+    size, seed = re.search(r"lm1b_sweep_(\w+?)_s(\d+)\.pt", os.path.basename(path)).groups()
+    diag = os.path.join(RESULTS, "cache", f"lm1b_{size}_s{seed}.pt")
+    if not os.path.exists(diag):
+        continue
+    ps, s = torch.load(path, weights_only=False)["per_sample_nll"], torch.load(diag, weights_only=False)["loc"].sum(1).numpy()
+    K_lm = len(json.load(open(os.path.join(RESULTS, f"lm1b_{size}_s{seed}.json")))["levels"])
+    nb, tb = (np.asarray(x, float) for x in ps["baseline"])
+    lv = sorted(int(re.search(r"m=(\d+)", k).group(1)) for k in ps if re.fullmatch(r"vcycle\|m=\d+\|c=1", k))
+    qs = (0.2, 1 / 3, 0.5, 2 / 3, 1.0)
+    lines += [f"Gating vs a finer restart level (LM1B-{size}, seed {seed}): gen. PPL (extra NFE per sample) when the top-q "
+              f"residual samples are cycled from level m; q = 1 cycles every sample. Single pass: {np.exp(nb.sum() / tb.sum()):.1f}.", "",
+              "| m | " + " | ".join(f"q = {q:.2f}" for q in qs) + " |", "|---|" + "---|" * len(qs)]
+    for m_ in lv:
+        nv, tv = (np.asarray(x, float) for x in ps[f"vcycle|m={m_}|c=1"])
+        cells = []
+        for q in qs:
+            g = s >= np.quantile(s, 1 - q)
+            cells.append(f"{np.exp(np.where(g, nv, nb).sum() / np.where(g, tv, tb).sum()):.1f} (+{q * (K_lm - m_):.1f})")
+        lines.append(f"| {m_} | " + " | ".join(cells) + " |")
+    lines.append("")
+
+# ---- LM1B quality beyond GPT-2 perplexity (lm1b_quality.py, lm1b_mauve.py) --------------------------
+for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_quality_*.json"))):
+    qj = json.load(open(path))
+    size = qj["size"]
+    mv_path = os.path.join(RESULTS, f"lm1b_mauve_{size}.json")
+    mj = json.load(open(mv_path)) if os.path.exists(mv_path) else None
+    mj = mj if mj and "half_size" in mj else None  # a run still in progress has no summary yet
+    gpt2 = {v: np.mean([rr["baseline"]["gen_ppl"] if v == "baseline" else rr["vcycle"][v]["gen_ppl"] for rr, _ in lm.get(size, [])])
+            for v in qj["variants"]} if size in lm else {}
+    ref2 = qj["ref2"].split("/")[-1]
+    lines += [f"## LM1B-{size}: quality beyond GPT-2 perplexity (seeds {qj['seeds']}, pooled {qj['n_per_seed'] * len(qj['seeds'])} samples)", "",
+              f"*Human*: held-out LM1B validation chunks (128 BERT ids, like the samples), scored the same way. {ref2}: gen. PPL "
+              "of the text without special tokens, up to 256 tokens. MAUVE: against the same number of human chunks, GPT-2-large "
+              "features, full sets" + (f". Uncertainty from {mj['boot']} rounds of paired half-size subsamples (without "
+                                      "replacement; fresh k-means seed): the last column gives the full-set difference, then the "
+                                      "half-size mean difference with its 2.5–97.5 percentiles and the share of rounds the "
+                                      "V-cycle is ahead. Half-size MAUVE is not on the full-size scale; only differences compare."
+                                      if mj else "."), "",
+              f"| Text | GPT-2 gen. PPL (FLM) | {ref2} gen. PPL | {ref2} ratio vs no-restrict [95% CI] | MAUVE ↑ | MAUVE − no-restrict |",
+              "|---|---|---|---|---|---|"]
+    lines.append(f"| human | {qj['human']['gen_ppl']:.1f} | {qj['ref2_ppl']['human']:.1f} | – | – | – |")
+    for v in qj["variants"]:
+        r2 = qj["ref2_ratios"].get(f"{v} / {v.replace('vcycle', 'no-restrict')}") if v.startswith("vcycle") else None
+        mcell = f"{(mj['point'][v] if mj else qj['mauve'][v]['pooled']):.3f}"
+        pd = mj["paired"].get(f"{v} - {v.replace('vcycle', 'no-restrict')}") if mj and v.startswith("vcycle") else None
+        lines.append(f"| {show(v)} | {gpt2.get(v, float('nan')):.1f} | {qj['ref2_ppl'][v]['pooled']:.1f} | "
+                     f"{f'{r2[0]:.3f} [{r2[1]:.3f}, {r2[2]:.3f}]' if r2 else '–'} | {mcell} | "
+                     + (f"{pd['full']:+.3f}; half-size {pd['half_mean']:+.3f} [{pd['half_ci'][0]:+.3f}, {pd['half_ci'][1]:+.3f}], "
+                        f"ahead in {100 * pd['share_won']:.0f}% |" if pd else "– |"))
+    lines += ["", f"Human cross-sample diversity: corpus distinct-2 {qj['human']['corpus_distinct2_per_seed_block'][0]:.3f} per "
+              f"{qj['n_per_seed']} chunks (samples: see the table above, per seed); entropy {qj['human']['entropy']:.3f}.", ""]
+    summary[f"lm1b_quality_{size}"] = {"quality": qj, "mauve": mj}
+
+with open(os.path.join(RESULTS, "SUMMARY.md"), "w", encoding="utf-8") as f:
     f.write("# Results summary (generated by experiments/analyze.py)\n\n" + "\n".join(lines) + "\n")
-with open(os.path.join(RESULTS, "summary.json"), "w") as f:
+with open(os.path.join(RESULTS, "summary.json"), "w", encoding="utf-8") as f:
     json.dump(summary, f, indent=1, default=float)
 print("\n".join(lines))

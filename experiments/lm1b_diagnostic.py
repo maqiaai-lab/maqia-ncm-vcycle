@@ -11,6 +11,7 @@ no-restriction control (keep generated r_{<m}), so the effect of the restriction
 measured at equal compute.
 
 python experiments/lm1b_diagnostic.py --size small --n 256 --seed 42 --vcycle 3,6
+python experiments/lm1b_diagnostic.py --task tinystories --n 256 --seed 42 --vcycle 6,8   (genppl protocol)
 """
 import argparse
 import os
@@ -26,6 +27,7 @@ from vcycle.lm1b import LM1B, auroc, corpus_distinct, spearman
 from vcycle.loading import load
 
 ap = argparse.ArgumentParser()
+ap.add_argument("--task", default="lm1b", help="lm1b (with --size) or another unconditional text task, e.g. tinystories")
 ap.add_argument("--size", default="small")
 ap.add_argument("--n", type=int, default=256)
 ap.add_argument("--bs", type=int, default=32)
@@ -36,7 +38,8 @@ ap.add_argument("--check", type=int, default=8, help="samples to compare against
 a = ap.parse_args()
 
 torch.set_grad_enabled(False)
-ck = os.path.join(ARTIFACTS, "lm1b", a.size)
+ck = os.path.join(ARTIFACTS, "lm1b", a.size) if a.task == "lm1b" else os.path.join(ARTIFACTS, a.task)
+tag = f"lm1b_{a.size}" if a.task == "lm1b" else a.task
 ncm = load(ck, device=device())
 dec = LevelDecoder(ncm)
 lm = LM1B(ncm, dec, ck, ref=a.ref, bs=a.bs)
@@ -48,18 +51,18 @@ ref = ncm.net.generate(lm.sample_l0(a.check), lm.prompt(a.check), temperature=lm
 torch.manual_seed(1234)
 l0 = lm.sample_l0(a.check)
 mine = torch.cat(dec.run(dec.prefix(lm.prompt(a.check)), start=1, codes=[l0], temperature=lm.temp)[0], 1)
-assert torch.equal(ref, mine), "LevelDecoder differs from generate() on LM1B"
-print(f"LevelDecoder == generate() on {a.check} LM1B samples (temperature {lm.temp})", flush=True)
+assert torch.equal(ref, mine), f"LevelDecoder differs from generate() on {tag}"
+print(f"LevelDecoder == generate() on {a.check} {tag} samples (temperature {lm.temp})", flush=True)
 
 
 def summarize(ids, nl, nt):
     r = lm.corpus(nl, nt, lm.quality(ids))
-    r["corpus_distinct2"], r["corpus_distinct3"] = corpus_distinct(ids, lm.pad, 2), corpus_distinct(ids, lm.pad, 3)
+    r["corpus_distinct2"], r["corpus_distinct3"] = corpus_distinct(ids, lm.pad, 2, lm.cut_eos), corpus_distinct(ids, lm.pad, 3, lm.cut_eos)
     return r
 
 
 # 2. Samples, residuals, quality. Resumes from the cache if an interrupted run already scored the baseline.
-cache_path = os.path.join(RESULTS, "cache", f"lm1b_{a.size}_s{a.seed}.pt")
+cache_path = os.path.join(RESULTS, "cache", f"{tag}_s{a.seed}.pt")
 prev = torch.load(cache_path, weights_only=False) if os.path.exists(cache_path) else None
 if prev is not None and len(prev["ids"]) == a.n:
     codes, ids, (nl, nt) = prev["codes"], prev["ids"], prev["per_sample_nll"]["baseline"]
@@ -76,7 +79,7 @@ else:
 rt, loc = lm.residuals(codes, ids)
 q = lm.quality(ids)
 ppl_s = nl / np.maximum(nt, 1)
-res = {"size": a.size, "n": a.n, "seed": a.seed, "levels": dec.levels, "seconds_generate": gen_s, "seconds_score": score_s,
+res = {"task": a.task, "size": a.size if a.task == "lm1b" else a.task, "n": a.n, "seed": a.seed, "levels": dec.levels, "seconds_generate": gen_s, "seconds_score": score_s,
        "baseline": summarize(ids, nl, nt)}
 res["fixed_point_rate"] = float(((rt.sum(1) == 0)).float().mean())
 res["disagree_rate_per_level"] = {"roundtrip": rt.mean(0).tolist(), "local": loc.mean(0).tolist()}
@@ -100,7 +103,7 @@ variant_ids = {}
 
 
 def checkpoint():
-    save_json(res, f"lm1b_{a.size}_s{a.seed}.json")
+    save_json(res, f"{tag}_s{a.seed}.json")
     torch.save({"codes": codes, "ids": ids, "rt": rt, "loc": loc, "ppl": ppl_s, "per_sample_nll": per_sample,
                 "variant_ids": variant_ids}, cache_path)
 

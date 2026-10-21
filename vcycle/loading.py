@@ -41,6 +41,11 @@ def load(checkpoint_dir, device="cpu", quiet=True):
 
     cfg = OmegaConf.load(os.path.join(checkpoint_dir, "config.yaml"))
     tk_cfg = cfg.tokenizer
+    # BPE tokenizers (TinyStories) read their vocabulary and merges from the checkpoint directory, as in
+    # scripts/eval_shard.py. These are pickles: check new ones with pickletools before loading them.
+    for key, name in (("vocab_file_path", "bpe_vocab"), ("merges_file_path", "bpe_merges")):
+        if cfg.checkpoints.get(name):
+            tk_cfg.pre_tokenizer[key] = os.path.join(checkpoint_dir, cfg.checkpoints[name])
     pre_tokenizer = hydra.utils.get_class(tokenizers[tk_cfg.pre_tokenizer.name]).from_config(tk_cfg.pre_tokenizer)
 
     out = io.StringIO()
