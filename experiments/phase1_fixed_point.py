@@ -18,7 +18,7 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from vcycle import sudoku
 from vcycle.cache import split_levels, sudoku_pass
-from vcycle.common import ARTIFACTS, DATA, batches, device, save_json
+from vcycle.common import ARTIFACTS, DATA, RESULTS, batches, device, save_json
 from vcycle.decoding import LevelDecoder
 from vcycle.loading import load
 
@@ -127,3 +127,7 @@ print("roundtrip AUROC", res["roundtrip"]["auroc"]["n_disagree_positions"],
       "local AUROC", res["local"]["auroc"]["n_disagree_positions"])
 print("confidence AUROC", {k: v for k, v in res["confidence_auroc"].items() if not isinstance(v, list)})
 save_json(res, f"phase1_sudoku_{a.difficulty}.json")
+torch.save({"roundtrip_count": torch.stack([v.sum(1) for v in rt], 1).short(),
+            "local_count": torch.stack([v.sum(1) for v in loc], 1).short(),
+            "dec_conf_mean": dconf.mean(1), "solved": m["solved"]},
+           os.path.join(RESULTS, "cache", f"phase1_scores_{a.difficulty}.pt"))

@@ -1,0 +1,4 @@
+medium: solved 0.9640 on 2000 boards (299s)
+fixed-point rate: solved 0.000 wrong 0.0
+roundtrip AUROC 0.8666075956662057 local AUROC 0.8832483287229137
+confidence AUROC {'1 - min decoder prob': 0.8280457584140157, '1 - mean decoder prob': 0.8473590940525588, '1 - min generator prob (all levels)': 0.6272908022130015, 'unit violations (verifier)': 1.0}

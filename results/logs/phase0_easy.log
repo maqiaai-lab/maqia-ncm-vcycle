@@ -1,0 +1,2 @@
+LevelDecoder == generate() on 500 boards
+{'difficulty': 'easy', 'n': 2000, 'device': 'cpu', 'checked_against_generate': 500, 'solved': 0.9940000176429749, 'cell_acc': 0.9997407793998718, 'valid': 0.9940000176429749, 'mean_unit_violations': 0.019500000402331352, 'boards_with_clue_violations': 0.0010000000474974513, 'nfe_per_board': 12, 'seconds_per_board': 0.08062193171299986}

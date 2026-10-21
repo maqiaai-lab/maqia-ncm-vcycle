@@ -15,13 +15,18 @@ import torch.nn.functional as F
 
 
 class Prefix:
-    """Embedded prompt plus its pad-attention bias; slicing keeps the two aligned."""
+    """Embedded prompt, its pad-attention bias and (optionally) its per-layer keys/values.
 
-    def __init__(self, emb, bias=None):
-        self.emb, self.bias = emb, bias
+    The prompt only attends to itself, so its keys/values are the same at every level and every
+    V-cycle; caching them skips recomputing the prompt at each level. Slicing keeps all aligned.
+    """
+
+    def __init__(self, emb, bias=None, kv=None):
+        self.emb, self.bias, self.kv = emb, bias, kv
 
     def __getitem__(self, idx):
-        return Prefix(self.emb[idx], None if self.bias is None else self.bias[idx])
+        return Prefix(self.emb[idx], None if self.bias is None else self.bias[idx],
+                      None if self.kv is None else [(k[idx], v[idx]) for k, v in self.kv])
 
     @property
     def shape(self):
@@ -29,8 +34,9 @@ class Prefix:
 
 
 class LevelDecoder:
-    def __init__(self, ncm):
+    def __init__(self, ncm, cache_prefix=True):
         self.ncm = ncm
+        self.cache_prefix = cache_prefix
         self.net, self.vqvae, self.vq = ncm.net, ncm.vqvae, ncm.vqvae.vq
         self.levels = list(self.vq.levels)
         self.K = len(self.levels)
@@ -38,14 +44,18 @@ class LevelDecoder:
         net = self.net
         assert net.query_level0 and not net.l0_ar, "needs query_level0 generation"
         assert not net.use_ctx_encoder
+        # Read config flags once with .get(): getattr() on a missing OmegaConf key raises and catches
+        # an exception whose traceback cycle pins the caller's frame (and its cached prompt tensors).
+        self.raw_token_prefix = bool(net.config.get("raw_token_prefix", False))
+        self.contextual_prefix = bool(net.config.get("contextual_prefix", False))
         self.nfe = 0  # generator forward passes (one per sampled level), summed over calls
 
     # ---- generator -------------------------------------------------------------------------
     @torch.no_grad()
     def prefix(self, prefix_tokens):
         net, enc, P = self.net, self.vqvae.encoder, self.net.prefix_len
-        if getattr(net.config, "raw_token_prefix", False):
-            if getattr(net.config, "contextual_prefix", False) and len(getattr(enc, "blocks", [])) > 0:
+        if self.raw_token_prefix:
+            if self.contextual_prefix and len(getattr(enc, "blocks", [])) > 0:
                 z = enc.forward_nopos(prefix_tokens)[:, :P, :]
             else:
                 z = enc.wte(prefix_tokens)[:, :P, :]
@@ -58,7 +68,34 @@ class LevelDecoder:
         if net.prefix_pad_id is not None:
             pm = prefix_tokens[:, :P] == net.prefix_pad_id
             bias = torch.where(pm[:, None, None, :], float("-inf"), 0.0).to(e.dtype)
-        return Prefix(e, bias)
+        kv = self._prefix_kv(e) if self.cache_prefix and bias is None else None
+        return Prefix(e, bias, kv)
+
+    @torch.no_grad()
+    def _prefix_kv(self, pe):
+        net, P = self.net, self.net.prefix_len
+        rope = (net.rope_cos_gen_0, net.rope_sin_gen_0) if net.use_rope else None
+        mask = torch.zeros(1, 1, P, P, device=pe.device)
+        h, kv = pe, []
+        for block in net.transformer.blocks:
+            block.attn.kv_caching(True)
+            h = block(h, attn_mask=mask, rope_cos_sin=rope)
+            kv.append((block.attn.cached_k, block.attn.cached_v))
+            block.attn.kv_caching(False)
+        return kv
+
+    @torch.no_grad()
+    def _cached_forward(self, x, prefix, k):
+        """Run level-k target embeddings x against the cached prompt keys/values."""
+        net, P, l = self.net, self.net.prefix_len, x.shape[1]
+        rope = (getattr(net, f"rope_cos_gen_{k}"), getattr(net, f"rope_sin_gen_{k}")) if net.use_rope else None
+        mask = torch.zeros(1, 1, l, P + l, device=x.device)
+        for block, (pk, pv) in zip(net.transformer.blocks, prefix.kv):
+            block.attn.kv_caching(True)
+            block.attn.cached_k, block.attn.cached_v = pk, pv
+            x = block(x, attn_mask=mask, rope_cos_sin=rope)
+            block.attn.kv_caching(False)
+        return net.lm_heads[k](net.transformer.ln_f(x))
 
     @torch.no_grad()
     def _level_pos(self, device):
@@ -85,6 +122,8 @@ class LevelDecoder:
             if net.use_post_upsample_conv:
                 q = net._apply_post_upsample_conv_single(q, 0)
             q = net.transformer.wte(q) + lpe[:, :l]
+            if prefix.kv is not None:
+                return self._cached_forward(q, prefix, 0)
             h = torch.cat([pe, q], dim=1)
             m0 = torch.zeros(1, 1, P + l, P + l, device=dev)
             m0[:, :, :P, P:] = float("-inf")
@@ -99,6 +138,8 @@ class LevelDecoder:
         if net.use_post_upsample_conv:
             x = net._apply_post_upsample_conv_single(x, k)
         x = net.transformer.wte(x) + lpe[:, a:a + l]
+        if prefix.kv is not None:
+            return self._cached_forward(x, prefix, k)
         return net._decode_level_logits(x, pe, k - 1, prefix.bias, hidx=k)
 
     @torch.no_grad()

@@ -6,6 +6,7 @@ verifier-gated and residual-gated numbers are computed afterwards from the per-b
 python experiments/phase2_vcycle.py --difficulty hard --n 500 --cycles 1
 """
 import argparse
+import json
 import os
 import sys
 
@@ -60,9 +61,18 @@ m0 = sudoku.metrics(x0, puzzles, solutions)
 print(f"{a.difficulty} n={a.n}: baseline solved {m0['solved'].float().mean():.4f}", flush=True)
 
 names = [s.strip() for s in a.configs.split(",")] if a.configs else list(CONFIGS)
+tag = a.tag or f"{a.difficulty}_n{a.n}_c{a.cycles}"
+json_path, pb_path = os.path.join(RESULTS, f"phase2_sudoku_{tag}.json"), os.path.join(RESULTS, "cache", f"phase2_perboard_{tag}.pt")
 summary = {"difficulty": a.difficulty, "n": a.n, "baseline_solved": m0["solved"].float().mean().item(), "configs": {}}
 per_board = {"baseline_solved": m0["solved"]}
+# Resume: greedy cycles are deterministic, so configs finished by an interrupted job are reused as they are.
+if os.path.exists(json_path) and os.path.exists(pb_path):
+    summary["configs"] = json.load(open(json_path))["configs"]
+    per_board = torch.load(pb_path, weights_only=False)
+    print(f"resuming {tag}: {len(summary['configs'])} configs already done", flush=True)
 for name in names:
+    if name in summary["configs"]:
+        continue
     kw = CONFIGS[name]
     solved = [[] for _ in range(a.cycles)]
     changed = [[] for _ in range(a.cycles)]
@@ -95,7 +105,5 @@ for name in names:
     r = rows[-1]
     print(f"{name:22s} solved {r['solved']:.4f} (fixed {r['fixed']}, broken {r['broken']}) "
           f"gated {r['verifier_gated_solved']:.4f} nfe+{r['extra_nfe_mean']:.2f} [{t.s:.0f}s]", flush=True)
-
-tag = a.tag or f"{a.difficulty}_n{a.n}_c{a.cycles}"
-save_json(summary, f"phase2_sudoku_{tag}.json")
-torch.save(per_board, os.path.join(RESULTS, "cache", f"phase2_perboard_{tag}.pt"))
+    save_json(summary, f"phase2_sudoku_{tag}.json")
+    torch.save(per_board, pb_path)

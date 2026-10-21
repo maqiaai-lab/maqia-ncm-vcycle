@@ -1,0 +1,10 @@
+[00:10:13] experiments/phase0_baseline.py --difficulty medium
+[00:18:53] experiments/phase0_baseline.py --difficulty easy
+[00:25:18] experiments/phase1_fixed_point.py --difficulty hard
+[00:25:57] experiments/phase1_fixed_point.py --difficulty medium
+[00:26:36] experiments/phase1_fixed_point.py --difficulty easy
+[00:27:11] experiments/phase1b_localization.py --difficulty hard
+[00:27:31] experiments/phase1b_localization.py --difficulty medium
+[00:27:49] experiments/phase1b_localization.py --difficulty easy
+[00:28:09] experiments/phase2_vcycle.py --difficulty hard --n 1000 --cycles 3
+[00:28:16] paused sudoku queue before phase 2; starting LM1B

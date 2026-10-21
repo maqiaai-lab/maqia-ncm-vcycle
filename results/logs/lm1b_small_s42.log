@@ -1,0 +1,10 @@
+LevelDecoder == generate() on 8 LM1B samples (temperature 1.0)
+Loading weights:   0%|          | 0/436 [00:00<?, ?it/s]Loading weights:  39%|███▉      | 171/436 [00:00<00:00, 1693.14it/s]Loading weights: 100%|██████████| 436/436 [00:00<00:00, 2313.09it/s]
+baseline: {'gen_ppl': 95.80788877908869, 'entropy': 4.315889550372958, 'adjacent_repeat': 0.004890501968503937, 'distinct2': 0.957400344488189, 'distinct3': 0.9961867559523809, 'pad_fraction': 0.0, 'eos_count': 7.0390625}
+fixed-point rate: 0.0
+roundtrip_total spearman {'per_token_nll': 0.20317292286564428, 'adjacent_repeat': 0.2079466124971389, 'distinct2': 0.23831325818265042, 'entropy': -0.012039368276493474} auroc {'by_nll': 0.7854515050167225, 'by_repeat': 0.6259498207885305}
+local_total spearman {'per_token_nll': 0.26458643282215605, 'adjacent_repeat': 0.21857690547035927, 'distinct2': 0.28565747310597384, 'entropy': 0.0004892423895628289} auroc {'by_nll': 0.8103678929765886, 'by_repeat': 0.619068100358423}
+vcycle       m=3: {'gen_ppl': 94.18989287165165, 'entropy': 4.320839274674654, 'adjacent_repeat': 0.006182332677165354, 'distinct2': 0.9628137303149606, 'distinct3': 0.9967757936507937, 'pad_fraction': 0.0, 'eos_count': 6.69140625, 'extra_nfe': 9}
+no-restrict  m=3: {'gen_ppl': 95.75111944614255, 'entropy': 4.313789384439588, 'adjacent_repeat': 0.004736712598425197, 'distinct2': 0.9590305118110236, 'distinct3': 0.9966827876984128, 'pad_fraction': 0.0, 'eos_count': 7.2109375, 'extra_nfe': 9}
+vcycle       m=6: {'gen_ppl': 79.92370732458888, 'entropy': 4.341543365269899, 'adjacent_repeat': 0.004859744094488189, 'distinct2': 0.9604146161417324, 'distinct3': 0.9964967757936508, 'pad_fraction': 0.0, 'eos_count': 7.03515625, 'extra_nfe': 6}
+no-restrict  m=6: {'gen_ppl': 93.80134361330637, 'entropy': 4.312447240576148, 'adjacent_repeat': 0.004183070866141732, 'distinct2': 0.957892470472441, 'distinct3': 0.9961867559523809, 'pad_fraction': 0.0, 'eos_count': 7.05859375, 'extra_nfe': 6}

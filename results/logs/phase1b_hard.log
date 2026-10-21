@@ -1,0 +1,12 @@
+level  0 (l= 1) local: P(dis|err) 0.208 P(dis|clean)   -   P(err|dis) 1.000 base 1.000
+level  1 (l= 2) local: P(dis|err) 0.080 P(dis|clean) 0.000 P(err|dis) 1.000 base 0.863
+level  2 (l= 4) local: P(dis|err) 0.293 P(dis|clean) 0.047 P(err|dis) 0.932 base 0.689
+level  3 (l= 6) local: P(dis|err) 0.281 P(dis|clean) 0.061 P(err|dis) 0.856 base 0.564
+level  4 (l= 9) local: P(dis|err) 0.253 P(dis|clean) 0.005 P(err|dis) 0.975 base 0.433
+level  5 (l=13) local: P(dis|err) 0.238 P(dis|clean) 0.067 P(err|dis) 0.736 base 0.442
+level  6 (l=18) local: P(dis|err) 0.259 P(dis|clean) 0.072 P(err|dis) 0.669 base 0.361
+level  7 (l=26) local: P(dis|err) 0.231 P(dis|clean) 0.091 P(err|dis) 0.556 base 0.331
+level  8 (l=37) local: P(dis|err) 0.200 P(dis|clean) 0.076 P(err|dis) 0.495 base 0.273
+level  9 (l=50) local: P(dis|err) 0.202 P(dis|clean) 0.101 P(err|dis) 0.387 base 0.239
+level 10 (l=67) local: P(dis|err) 0.208 P(dis|clean) 0.104 P(err|dis) 0.346 base 0.210
+level 11 (l=89) local: P(dis|err) 0.036 P(dis|clean) 0.018 P(err|dis) 0.196 base 0.109

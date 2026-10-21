@@ -1,0 +1,212 @@
+{
+  "difficulty": "medium",
+  "n_wrong_boards": 72,
+  "levels": [
+    1,
+    2,
+    4,
+    6,
+    9,
+    13,
+    18,
+    26,
+    37,
+    50,
+    67,
+    89
+  ],
+  "per_level": [
+    {
+      "level": 0,
+      "length": 1,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.1944444477558136,
+        "P(disagree | span clean)": null,
+        "P(span has error | disagree)": 1.0,
+        "P(span has error)": 1.0
+      },
+      "local": {
+        "P(disagree | span has error)": 0.1944444477558136,
+        "P(disagree | span clean)": null,
+        "P(span has error | disagree)": 1.0,
+        "P(span has error)": 1.0
+      }
+    },
+    {
+      "level": 1,
+      "length": 2,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.20000000298023224,
+        "P(disagree | span clean)": 0.0,
+        "P(span has error | disagree)": 1.0,
+        "P(span has error)": 0.7291666865348816
+      },
+      "local": {
+        "P(disagree | span has error)": 0.190476194024086,
+        "P(disagree | span clean)": 0.0,
+        "P(span has error | disagree)": 1.0,
+        "P(span has error)": 0.7291666865348816
+      }
+    },
+    {
+      "level": 2,
+      "length": 4,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.38235294818878174,
+        "P(disagree | span clean)": 0.07894736528396606,
+        "P(span has error | disagree)": 0.8125,
+        "P(span has error)": 0.4722222089767456
+      },
+      "local": {
+        "P(disagree | span has error)": 0.36764705181121826,
+        "P(disagree | span clean)": 0.07236842066049576,
+        "P(span has error | disagree)": 0.8196721076965332,
+        "P(span has error)": 0.4722222089767456
+      }
+    },
+    {
+      "level": 3,
+      "length": 6,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.29936304688453674,
+        "P(disagree | span clean)": 0.07636363804340363,
+        "P(span has error | disagree)": 0.6911764740943909,
+        "P(span has error)": 0.36342594027519226
+      },
+      "local": {
+        "P(disagree | span has error)": 0.30573248863220215,
+        "P(disagree | span clean)": 0.06181818246841431,
+        "P(span has error | disagree)": 0.7384615540504456,
+        "P(span has error)": 0.36342594027519226
+      }
+    },
+    {
+      "level": 4,
+      "length": 9,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.3757575750350952,
+        "P(disagree | span clean)": 0.0020703934133052826,
+        "P(span has error | disagree)": 0.9841269850730896,
+        "P(span has error)": 0.25462964177131653
+      },
+      "local": {
+        "P(disagree | span has error)": 0.38787877559661865,
+        "P(disagree | span clean)": 0.02484472095966339,
+        "P(span has error | disagree)": 0.8421052694320679,
+        "P(span has error)": 0.25462964177131653
+      }
+    },
+    {
+      "level": 5,
+      "length": 13,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.3080168664455414,
+        "P(disagree | span clean)": 0.0844062939286232,
+        "P(span has error | disagree)": 0.5530303120613098,
+        "P(span has error)": 0.2532051205635071
+      },
+      "local": {
+        "P(disagree | span has error)": 0.3037974536418915,
+        "P(disagree | span clean)": 0.08011444658041,
+        "P(span has error | disagree)": 0.5625,
+        "P(span has error)": 0.2532051205635071
+      }
+    },
+    {
+      "level": 6,
+      "length": 18,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.27137547731399536,
+        "P(disagree | span clean)": 0.0876338854432106,
+        "P(span has error | disagree)": 0.44785276055336,
+        "P(span has error)": 0.20756173133850098
+      },
+      "local": {
+        "P(disagree | span has error)": 0.27137547731399536,
+        "P(disagree | span clean)": 0.07594936341047287,
+        "P(span has error | disagree)": 0.4834437072277069,
+        "P(span has error)": 0.20756173133850098
+      }
+    },
+    {
+      "level": 7,
+      "length": 26,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.2759643793106079,
+        "P(disagree | span clean)": 0.15048860013484955,
+        "P(span has error | disagree)": 0.28703704476356506,
+        "P(span has error)": 0.18002136051654816
+      },
+      "local": {
+        "P(disagree | span has error)": 0.2878338396549225,
+        "P(disagree | span clean)": 0.09381107240915298,
+        "P(span has error | disagree)": 0.40248963236808777,
+        "P(span has error)": 0.18002136051654816
+      }
+    },
+    {
+      "level": 8,
+      "length": 37,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.3243243098258972,
+        "P(disagree | span clean)": 0.16782912611961365,
+        "P(span has error | disagree)": 0.23762376606464386,
+        "P(span has error)": 0.1388888955116272
+      },
+      "local": {
+        "P(disagree | span has error)": 0.26216214895248413,
+        "P(disagree | span clean)": 0.10200522840023041,
+        "P(span has error | disagree)": 0.2930513620376587,
+        "P(span has error)": 0.1388888955116272
+      }
+    },
+    {
+      "level": 9,
+      "length": 50,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.3410138189792633,
+        "P(disagree | span clean)": 0.21604548394680023,
+        "P(span has error | disagree)": 0.17788460850715637,
+        "P(span has error)": 0.12055555731058121
+      },
+      "local": {
+        "P(disagree | span has error)": 0.260368674993515,
+        "P(disagree | span clean)": 0.10644346475601196,
+        "P(span has error | disagree)": 0.25111111998558044,
+        "P(span has error)": 0.12055555731058121
+      }
+    },
+    {
+      "level": 10,
+      "length": 67,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.36614173650741577,
+        "P(disagree | span clean)": 0.2620481848716736,
+        "P(span has error | disagree)": 0.14123006165027618,
+        "P(span has error)": 0.10530679672956467
+      },
+      "local": {
+        "P(disagree | span has error)": 0.2381889820098877,
+        "P(disagree | span clean)": 0.1253475397825241,
+        "P(span has error | disagree)": 0.182779461145401,
+        "P(span has error)": 0.10530679672956467
+      }
+    },
+    {
+      "level": 11,
+      "length": 89,
+      "roundtrip": {
+        "P(disagree | span has error)": 0.10778442770242691,
+        "P(disagree | span clean)": 0.03967731446027756,
+        "P(span has error | disagree)": 0.12996390461921692,
+        "P(span has error)": 0.05212234705686569
+      },
+      "local": {
+        "P(disagree | span has error)": 0.08682634681463242,
+        "P(disagree | span clean)": 0.017122160643339157,
+        "P(span has error | disagree)": 0.21804511547088623,
+        "P(span has error)": 0.05212234705686569
+      }
+    }
+  ]
+}

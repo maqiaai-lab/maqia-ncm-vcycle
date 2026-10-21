@@ -35,15 +35,15 @@ NCM decodes once from coarse to fine and never revisits earlier levels. In multi
 
 ## 4. Phase 0 — Setup and reproduction (Day 1–2)
 
-- [ ] Clone the repo, install, download checkpoints for **Sudoku** and **LM1B** first (small, fast).
-- [ ] Reproduce one number from the paper on each (Sudoku accuracy, LM1B gen. perplexity + unigram entropy).
-- [ ] Find these entry points in the code. I could not inspect the repo; fill these in.
-  - [ ] Tokenizer `encode(text) -> codes per level`: ____________
-  - [ ] Tokenizer `decode(ẑ) -> tokens`: ____________
-  - [ ] Generation loop over levels: ____________
-  - [ ] Can generation **start from level j** given `ẑ^(j-1)`? If not, write a small wrapper.
-  - [ ] How Sudoku clues and prompts are fed (prefix-LM conditioning): ____________
-- [ ] Log the per-level codes, not just final text, for every sample.
+- [x] Clone the repo, install, download checkpoints for **Sudoku** first. `setup.sh` pins NCM at commit `c702742`. LM1B is not done yet; it is a stretch goal because this machine is CPU-only.
+- [x] Reproduce one number from the paper. Sudoku-hard: **86.30%** solved on 2,000 boards vs **86.1%** in the paper, at 12 NFE with greedy decoding (`results/phase0_sudoku_hard.json`). LM1B is not done.
+- [x] Find these entry points in the code (HazyResearch/ncm @ c702742):
+  - [x] **Tokenizer `encode(text) -> codes per level`.** In NCM this is `VQVAE.encode` (`models/vqvae.py`), which runs `_encode_pre_quant` and then `MultiscaleResidualVectorQuantizer.z_to_idx` (`models/quant.py`). The Sudoku encoder is just token + position embeddings followed by a GroupNorm (`enc_layers=0`), so restriction costs almost nothing. Our wrapper is `LevelDecoder.encode`, which splits the 322 codes into the 12 levels (1, 2, 4, 6, 9, 13, 18, 26, 37, 50, 67, 89).
+  - [x] **Tokenizer `decode(ẑ) -> tokens`.** In NCM this is `VQVAE.decoder(z_hat)` (`models/vae.py`, one transformer block) followed by argmax. LM1B instead picks tokens with frequency and adjacency penalties (`pick_tokens` in `scripts/eval_shard.py`). Our wrapper is `LevelDecoder.decode`.
+  - [x] **Generation loop over levels.** `NextConceptTransformer.generate` (`models/next_concept.py`). Level 0 comes from learned queries (`query_level0`); level k+1 reads `area_interp(ẑ^(k), l_{k+1})` (`vq.get_next_autoregressive_input`) through `_decode_level_logits`.
+  - [x] **Can generation start from level j?** Not in NCM. Our wrapper `LevelDecoder.run(prefix, start=j, codes=..., keep=...)` supports a per-board start level and masked resampling. It reproduces `generate()` code for code on 500 boards per difficulty. It also caches the prompt's per-layer keys and values, since the prompt never attends to the targets, which makes it 3.5× faster with identical codes (`experiments/check_prefix_cache.py`).
+  - [x] **How Sudoku clues and prompts are fed.** The prompt is prefix-LM conditioning on 91 raw tokens (BOS, 89 board tokens with 0 for blank, BOS), embedded with the tokenizer's token table (`raw_token_prefix`). Every level attends to it, and it attends only to itself. Clues are not hard-enforced: 0.1% of greedy boards overwrite a clue.
+- [x] Log the per-level codes, not just final text, for every sample. `vcycle/cache.py` stores codes (N×322), tokens and the generator and decoder confidences.
 
 ## 5. Phase 1 — Go/no-go diagnostic: the fixed-point test (Day 2–3)
 
@@ -51,10 +51,10 @@ This is the cheapest test of whether the idea has signal at all, and it needs no
 
 **Definition:** a sample is *self-consistent* if `encode(decode(r)) == r`, i.e., it is a fixed point of the tokenizer round-trip.
 
-- [ ] For N baseline samples (e.g., 2,000 Sudoku puzzles, 2,000 LM1B samples), compute:
+- [x] For N baseline samples (e.g., 2,000 Sudoku puzzles, 2,000 LM1B samples), compute: *(done: 2,000 boards per difficulty, 768 LM1B-small + 256 LM1B-medium texts; `results/phase1_*.json`, `results/lm1b_*.json`)*
   - Fixed-point rate overall and **per level** (fraction of positions where `r'_k == r_k`).
   - Where disagreements concentrate (which levels, which positions).
-- [ ] Correlate disagreement with errors:
+- [x] Correlate disagreement with errors: *(level-local residual AUROC 0.87 / 0.88 / 0.92 on Sudoku; 0.74 for the worst-NLL decile on LM1B-small)*
   - Sudoku: disagreement rate in **wrong** vs **correct** solutions; disagreement vs the number of violated rows, columns and boxes.
   - LM1B: disagreement vs repetition rate (repeated adjacent tokens, distinct-2/3).
 
@@ -155,12 +155,12 @@ def v_cycle_decode(model, tok, prompt, n_cycles=2, project=None, pick_level=None
 ## 11. Prior-art check (do before outreach)
 
 Search Google Scholar, arXiv and Semantic Scholar for:
-- [ ] "multigrid" + "discrete diffusion" / "next-scale prediction" / "VAR"
-- [ ] "V-cycle" + "generative model" / "autoregressive" / "VQ-VAE"
-- [ ] "encode-decode consistency" / "cycle consistency" + "non-autoregressive decoding"
-- [ ] "re-encoding" + "iterative refinement" + "VQ"
-- [ ] Self-correction in VAR models (e.g., Infinity's bitwise self-correction; note it is a *training-time* fix, while ours is *inference-time*)
-- [ ] HMAR (Kumbong et al., CVPR 2025), the NCM lead author's earlier image work. Check what refinement it already does.
+- [x] "multigrid" + "discrete diffusion" / "next-scale prediction" / "VAR"
+- [x] "V-cycle" + "generative model" / "autoregressive" / "VQ-VAE"
+- [x] "encode-decode consistency" / "cycle consistency" + "non-autoregressive decoding"
+- [x] "re-encoding" + "iterative refinement" + "VQ" *(closest: DiverseVAR "scale-travel", arXiv:2511.21415; see `docs/prior_art.md`)*
+- [x] Self-correction in VAR models (e.g., Infinity's bitwise self-correction; note it is a *training-time* fix, while ours is *inference-time*)
+- [x] HMAR (Kumbong et al., CVPR 2025), the NCM lead author's earlier image work. Check what refinement it already does. *(masked multi-step sampling within a scale; never revisits coarser scales)*
 
 Record anything close here and state clearly how this differs.
 
@@ -177,7 +177,7 @@ Record anything close here and state clearly how this differs.
 
 ## 13. Outreach checklist
 
-- [ ] One chart: Sudoku accuracy vs NFE, baseline vs V-cycle vs best-of-N.
+- [x] One chart: Sudoku accuracy vs NFE, baseline vs V-cycle vs best-of-N (`results/sudoku_hard_n2000_T1.0_acc_vs_nfe.png`). The stronger chart for outreach is LM1B (`results/lm1b_small_ppl_vs_nfe.png`).
 - [ ] Two or three key numbers written in the email body.
 - [ ] A public GitHub repo with code and results (full URL, no shorteners, no zips).
 - [ ] A specific subject line, e.g., *"NCM: multigrid V-cycle decoding improves Sudoku accuracy (short result)"*.
@@ -186,3 +186,83 @@ Record anything close here and state clearly how this differs.
 ## 14. Notes and log
 
 _Use this section as a lab notebook: dates, commands, results, surprises._
+
+### 2026-10-20 (setup, Phase 0, Phase 1 on hard)
+
+- **Environment:** CPU only (4 cores, 15 GB RAM, no GPU). The code runs unchanged on GPU (`vcycle.common.device()`).
+- **Checkpoint safety:** all checkpoints load with `weights_only=True`. The dataset pickles contain only integer lists (checked with `pickletools`).
+- **Sudoku-hard reproduced:** 86.30% solved on 2,000 boards (paper: 86.1%). The baseline never violates a clue on the first 250 boards and does on 0.1% of all 2,000.
+- **Surprise 1 (fixed points):** the fixed-point rate is **0%**. Every greedy sample's codes differ from `encode(decode(r))` somewhere, yet `decode(encode(x)) == x` holds for every board. The generator writes a *non-canonical* code for the same board.
+  - The plan's yes/no fixed-point test therefore carries no signal (AUROC 0.5).
+  - The *amount* of disagreement does: **AUROC 0.86** for spotting wrong boards (0.92 with the level-local residual, `encode_given_coarse`). For comparison, decoder confidence scores 0.87 and generator confidence 0.73. **Go.**
+- **Surprise 2 (level 4):** at level 4 (9 positions, about one row each) the generator is 100% confident on every board, yet the residual fires on 0.5% of clean spans and on 25% of spans that contain an error. When it fires, the span is wrong **97.5%** of the time (base rate 43%). The restriction sees errors the generator cannot (`results/phase1b_localization_hard.json`).
+- **Plan correction:** V1 as written (keep re-encoded levels < j, resample from j, with τ = 0) is a guaranteed **no-op** under greedy decoding. Levels < j agree, so the same context gives the same argmax. I added *V1-accept*, which also keeps the re-encoded level j and resamples from j+1.
+- **Plan correction:** V3 clue projection changes the codes of only the 0.1% of boards that violate a clue.
+- **Prior art:** see `docs/prior_art.md`. The closest work is DiverseVAR's "scale-travel" (arXiv:2511.21415): re-encode and resume at a fixed scale, once, for images.
+
+### 2026-10-21 (engineering notes, Phase 2/3 smoke tests)
+
+- **Memory bug and fix:** `getattr(omegaconf_cfg, "missing_key", default)` raises and catches an exception internally. The caught exception's traceback cycle pinned the caller's frame, and with it about 750 MB of cached prompt keys/values per batch, until the process was OOM-killed at 14 GB. Fixed by reading config flags once with `.get()`.
+- **Speed:** with the prompt cache, a greedy pass costs 0.077 s/board on CPU (2,000 boards in about 2.6 min).
+- **Phase 2 smoke test** (250 hard boards, greedy, 2 cycles):
+  - Two configurations are exact no-ops, as predicted: V1 τ=0, and no-restrict at m=3.
+  - V1-accept: 84.8 → 86.0% (4 boards fixed, 1 broken).
+  - Gated by the Sudoku checker: 86.4%, for +5 NFE/board.
+- **Phase 3 smoke test** (250 boards, temperature 1, retries gated by the checker, 3 rounds):
+  - Partial restarts are cheaper than fresh ones: 92.4% at 15.2 NFE vs 91.6% at 16.5 NFE.
+  - Restriction vs no restriction at m=3 differs by 1 board, so the full 2,000-board, 3-seed run is needed.
+
+### 2026-10-21 (LM1B arm: the V-cycle works on text)
+
+Setup: `experiments/lm1b_diagnostic.py` and `lm1b_sweep.py`.
+- **Sampling** matches NCM's LM1B eval exactly: level 0 from the unigram, T=1, frequency- and adjacency-penalized token picking. `LevelDecoder` reproduces `generate()` code for code under the same RNG seed.
+- **Scoring** uses GPT-2 large with the FLM protocol (the paper's). Entropy is the mean per-sample unigram entropy of the raw ids.
+- **Model:** LM1B-small, 256 samples per seed.
+
+Results:
+- **Baseline (NCM single pass):** gen. PPL 95.8 / 94.6 / 91.0 (seeds 42 / 0 / 1), entropy 4.317. The paper's LM1B point is about 92 at H = 4.31.
+- **The residual on text:** the fixed-point rate is again 0%. The level-local residual flags the worst-NLL decile with AUROC 0.74 (mean of 3 seeds; Spearman ρ with per-token NLL +0.25).
+  - The generated codes are 86–100% off the encoder's manifold at levels 0–6, and 25% at the finest level.
+- **V-cycle, one cycle from level 6** (+6 NFE): gen. PPL **79.9 / 80.7 / 78.9**. No-restriction at the same levels and compute: 93.8 / 94.7 / 91.1.
+  - Pooled paired bootstrap, V-cycle / no-restriction: **0.857 [0.836, 0.876]**.
+  - Entropy rises from 4.314 to 4.344.
+  - Restarting from level 3 does nothing (0.985 [0.951, 1.024]).
+- **Sweep** (seed 42):
+  - The V-cycle beats no-restriction at every level: m=4: 0.93×, m=6: 0.87×, m=8: 0.87×, m=10: 0.92×.
+  - Iterating helps: m=6 gives 79.9 → 75.2 → 72.8 over 1/2/3 cycles; m=8 × 2 gives 75.2 at +8 NFE.
+- **Not just colder sampling:**
+  - NCM at T=0.9 reaches PPL 82.5, but with lower entropy (4.289), lower corpus distinct-2 (0.464) and more repeats (0.61%).
+  - The V-cycle from m=8 at the same PPL (82.8) has entropy 4.337, distinct-2 0.489 and 0.35% repeats.
+  - The V-cycle points lie beyond NCM's temperature frontier (`results/lm1b_small_ppl_vs_entropy.png`).
+- **Caveat:** cross-sample distinct-2 does drop vs the T=1 baseline (0.505 → 0.477 for m=6). The V-cycle text is more fluent and somewhat more generic, though less so than colder sampling.
+- **Mechanism (from the examples):** the V-cycle keeps the draft's content and repairs its fluency, like an editing pass. Resampling the same levels from the *generated* coarse codes produces an unrelated text: off-manifold coarse codes barely pin down content, while the encoder's codes do. Restarting from level 3 does not help, because levels 3–5 are regenerated off-manifold again.
+
+### 2026-10-21 (Sudoku Phases 2–3, LM1B-medium, wrap-up)
+
+Two container restarts interrupted the runs. Phase 2, Phase 3 and the LM1B diagnostic now checkpoint and resume, and no finished run was lost.
+
+**Sudoku Phase 3** (hard, 2,000 boards × 3 seeds, checker-gated retries at T=1, compared at matched mean NFE, paired bootstrap):
+- **V-cycle from level 5 vs fresh restarts (best-of-N):** +0.93 / +1.19 / +0.93 / +0.92 points at 13 / 14 / 15 / 16 NFE. All CIs exclude 0, e.g. 90.4% vs 89.3% at 14 NFE.
+- **Restriction step alone** (V-cycle − no-restriction at level 5): +0.14 to +0.47 points, with CIs that include 0. At level 7 it is +0.6 and significant, but level 7 is a poor restart level.
+- **V2 masked resampling** is significantly *worse* than full resampling (−0.7 to −1.5 points at level 5).
+- **V1-accept** (residual-chosen level) is competitive but not better than the best fixed level.
+- **Conclusion:** on Sudoku, most of the gain is "keep the coarse levels, resample the fine ones". Re-encoding adds little, because the generated codes are mostly on the encoder's manifold.
+
+**Sudoku Phase 2** (greedy, no checker, 1,000 hard boards, 3 cycles):
+- **Predicted no-ops:** V1 at τ ≤ 0.1 and no-restriction m=3 change nothing.
+- **V1-accept:** 84.3 → 85.2% (10 fixed, 1 broken).
+- **V4 m=6:** 85.3% after one cycle (10 fixed, 0 broken; +6 NFE), 85.5% after three.
+- **Residual-gated:** cycling only the top-20% residual boards keeps 85.1% at a fifth of the compute.
+
+**LM1B-medium** (317M parameters, seed 42, 256 samples):
+- **Single pass:** 90.7.
+- **V-cycle m=6:** **69.6**, against no-restriction 87.5. The ratio is 0.796 [0.765, 0.825], stronger than on small.
+- **V-cycle m=8:** 78.9 vs 89.4.
+- Entropy is unchanged (4.343 → 4.346), and corpus distinct-2 drops 0.586 → 0.554.
+
+**Overall answer to the plan's question** ("do NCM samples improve with multigrid correction cycles, without retraining?"):
+- **Text: yes, clearly.** The improvement comes specifically from the restriction step.
+- **Sudoku: modestly.** The gain comes mostly from partial restarts, not from re-encoding.
+- **The residual is a useful training-free error detector** on both.
+
+All numbers are in `results/SUMMARY.md` and the README.

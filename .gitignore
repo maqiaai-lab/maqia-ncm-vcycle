@@ -1,6 +1,5 @@
 third_party/
 artifacts/
 data/
-results/cache/
 __pycache__/
 *.pyc

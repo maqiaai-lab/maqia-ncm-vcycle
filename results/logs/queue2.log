@@ -1,0 +1,6 @@
+[03:19:26] experiments/phase3_controls.py --difficulty hard --n 2000 --rounds 8 --temp 1.0 --levels 1,3,5,7 --seed 0 --tag hard_n2000_T1.0_s0
+[03:47:19] experiments/phase3_controls.py --difficulty hard --n 2000 --rounds 8 --temp 1.0 --levels 1,3,5,7 --seed 1 --tag hard_n2000_T1.0_s1
+[04:21:49] experiments/phase3_controls.py --difficulty hard --n 2000 --rounds 8 --temp 1.0 --levels 1,3,5,7 --seed 2 --tag hard_n2000_T1.0_s2
+[04:56:03] experiments/phase2_vcycle.py --difficulty hard --n 1000 --cycles 3
+[05:25:15] experiments/phase2_vcycle.py --difficulty hard --n 1000 --cycles 3
+[06:15:10] done

@@ -1,0 +1,13 @@
+{
+  "difficulty": "hard",
+  "n": 2000,
+  "device": "cpu",
+  "checked_against_generate": 500,
+  "solved": 0.8629999756813049,
+  "cell_acc": 0.9835246801376343,
+  "valid": 0.8629999756813049,
+  "mean_unit_violations": 0.4659999907016754,
+  "boards_with_clue_violations": 0.0010000000474974513,
+  "nfe_per_board": 12,
+  "seconds_per_board": 0.0773016563694996
+}
