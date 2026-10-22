@@ -527,3 +527,404 @@ Each item pairs two texts made from the same single-pass sample (LM1B) or for th
 | WMT14 | vcycle m=5 c=1 | baseline | 3003 | 0.515 [0.506, 0.525] | 0.441 [0.424, 0.460] | 33% | Qwen2.5-7B-Instruct |
 | XSum | vcycle m=5 c=1 | baseline | 2000 | 0.526 [0.516, 0.535] | 0.440 [0.417, 0.462] | 23% | Qwen2.5-7B-Instruct |
 
+## Sudoku (easy): checker-gated retries, with singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA GeForce RTX 4050 Laptop GPU)
+
+Greedy first pass 99.40%. Soft-decision first pass at Ts = 1 (chosen on boards 0–999): 99.40% (held-out half 99.20%). Singles propagation alone completes 99.90% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | 18 NFE | 20 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|---|---|
+| Best-of-N (fresh restarts, T = 1) | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.1) | 6% |
+| Fresh greedy restarts in random symmetry frames | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.0) | 0% |
+| V-cycle retries from level 5 (T = 1) | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.0) | 5% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.0) | 0% |
+| Soft-decision first pass + twisted V-cycle | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.0) | 0% |
+| Soft decisions throughout + twisted V-cycle | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.0) | 0% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+
+Further paired differences (percentage points, mean [95% CI]; FLOPs counted as token positions processed, one full pass = 1, a retry in a new frame recomputes the prompt):
+
+| Comparison | Budget | Difference |
+|---|---|---|
+
+## Sudoku (easy): checker-gated retries, with singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA A10G, replication)
+
+Greedy first pass 99.40%. Soft-decision first pass at Ts = 1 (chosen on boards 0–999): 99.40% (held-out half 99.20%). Singles propagation alone completes 99.90% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|
+| V-cycle retries from level 5 (T = 1) | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | – | 5% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | – | 0% |
+| Soft-decision first pass + twisted V-cycle | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | – | 0% |
+| Soft decisions throughout + twisted V-cycle | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | – | 0% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+
+## Sudoku (easy): checker-gated retries, without singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA GeForce RTX 4050 Laptop GPU)
+
+Greedy first pass 99.40%. Soft-decision first pass at Ts = 1 (chosen on boards 0–999): 99.40% (held-out half 99.20%). Singles propagation alone completes 99.90% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | 18 NFE | 20 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|---|---|
+| Best-of-N (fresh restarts, T = 1) | 99.4 | – | – | – | – | – | – | 99.9 (12.5) | 21% |
+| Fresh greedy restarts in random symmetry frames | 99.4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.1) | 1% |
+| V-cycle retries from level 5 (T = 1) | 99.4 | – | – | – | – | – | – | 99.9 (12.3) | 18% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 99.4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.1) | 3% |
+| Soft-decision first pass + twisted V-cycle | 99.4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.1) | 3% |
+| Soft decisions throughout + twisted V-cycle | 99.4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.1) | 9% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+| C-A0@12 | all | +0.00 [-0.20, +0.25] |
+| C-A0@12 | held-out half | +0.00 [-0.40, +0.40] |
+
+Further paired differences (percentage points, mean [95% CI]; FLOPs counted as token positions processed, one full pass = 1, a retry in a new frame recomputes the prompt):
+
+| Comparison | Budget | Difference |
+|---|---|---|
+
+## Sudoku (hard): checker-gated retries, with singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA GeForce RTX 4050 Laptop GPU)
+
+Greedy first pass 86.15%. Soft-decision first pass at Ts = 4 (chosen on boards 0–999): 89.90% (held-out half 92.00%). Singles propagation alone completes 85.45% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | 18 NFE | 20 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|---|---|
+| Best-of-N (fresh restarts, T = 1) | 92.7 | 93.6 | 94.5 | 95.2 | 95.7 | 96.2 | 96.7 | 97.4 (26.1) | 28% |
+| Fresh greedy restarts in random symmetry frames | 92.7 | 94.9 | 96.4 | 97.1 | 97.8 | 98.4 | 98.9 | 99.0 (20.1) | 10% |
+| V-cycle retries from level 5 (T = 1) | 92.7 | 94.1 | 94.8 | 95.2 | 95.6 | 96.1 | 96.5 | 96.6 (21.7) | 38% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 92.7 | 95.6 | 97.2 | 98.1 | 98.5 | – | – | 98.8 (17.1) | 13% |
+| Soft-decision first pass + twisted V-cycle | 93.8 | 96.2 | 97.4 | 98.2 | 98.6 | – | – | 98.8 (16.9) | 15% |
+| Soft decisions throughout + twisted V-cycle | 93.8 | 96.8 | 97.9 | 98.6 | 98.8 | – | – | 98.9 (16.3) | 11% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+| C-A0@12 | all | +1.10 [+0.50, +1.65] |
+| C-A0@12 | held-out half | +0.90 [+0.20, +1.60] |
+| E-N@14 | all | +0.32 [-0.10, +0.74] |
+| E-N@14 | held-out half | +0.60 [+0.03, +1.27] |
+| F-N@14 | all | +1.95 [+1.30, +2.52] |
+| F-N@14 | held-out half | +1.62 [+0.77, +2.42] |
+| A-E@13 | all | +1.53 [+1.04, +2.02] |
+| A-E@13 | held-out half | +1.01 [+0.30, +1.70] |
+| A-E@14 | all | +2.45 [+1.79, +3.08] |
+| A-E@14 | held-out half | +1.72 [+0.85, +2.40] |
+| A-E@16 | all | +2.89 [+2.05, +3.66] |
+| A-E@16 | held-out half | +2.11 [+1.02, +3.04] |
+| A-F@13 | all | +0.71 [+0.39, +1.00] |
+| A-F@13 | held-out half | +0.52 [+0.05, +0.94] |
+| A-F@14 | all | +0.82 [+0.46, +1.21] |
+| A-F@14 | held-out half | +0.70 [+0.10, +1.20] |
+| A-F@16 | all | +0.64 [+0.24, +1.07] |
+| A-F@16 | held-out half | +0.55 [-0.05, +1.07] |
+| B-A@13 | all | +0.63 [+0.07, +1.24] |
+| B-A@13 | held-out half | +0.76 [+0.09, +1.53] |
+| B-A@14 | all | +0.16 [-0.38, +0.73] |
+| B-A@14 | held-out half | +0.36 [-0.08, +1.16] |
+| D-B@14 | all | +0.52 [+0.11, +0.94] |
+| D-B@14 | held-out half | +0.13 [-0.33, +0.64] |
+| D-A@13 | all | +1.15 [+0.51, +1.76] |
+| D-A@13 | held-out half | +1.26 [+0.53, +2.02] |
+| D-A@14 | all | +0.68 [+0.18, +1.34] |
+| D-A@14 | held-out half | +0.49 [+0.08, +1.32] |
+| D-E@13 | all | +2.68 [+1.94, +3.40] |
+| D-E@13 | held-out half | +2.27 [+1.28, +3.18] |
+| D-E@14 | all | +3.12 [+2.43, +3.92] |
+| D-E@14 | held-out half | +2.22 [+1.27, +3.23] |
+| D-E@16 | all | +3.22 [+2.34, +4.07] |
+| D-E@16 | held-out half | +2.21 [+1.21, +3.40] |
+| A-E@1.2FLOP | all | +1.74 [+1.14, +2.34] |
+| A-E@1.4FLOP | all | +2.53 [+1.78, +3.26] |
+| D-E@1.2FLOP | all | +2.80 [+2.11, +3.50] |
+| D-E@1.4FLOP | all | +2.98 [+2.18, +3.77] |
+| A-F@1.2FLOP | all | -0.17 [-0.60, +0.18] |
+| A-F@1.4FLOP | all | -0.04 [-0.39, +0.26] |
+
+Further paired differences (percentage points, mean [95% CI]; FLOPs counted as token positions processed, one full pass = 1, a retry in a new frame recomputes the prompt):
+
+| Comparison | Budget | Difference |
+|---|---|---|
+| D − F | 13 NFE | +1.86 [+1.18, +2.55] |
+| D − F | 14 NFE | +1.50 [+0.94, +2.27] |
+| D − F | 1.1 full-pass FLOPs | +0.90 [+0.33, +1.54] |
+| D − F | 1.2 full-pass FLOPs | +0.90 [+0.27, +1.41] |
+| D − F | 1.4 full-pass FLOPs | +0.41 [+0.00, +0.84] |
+| A − F | 13 NFE | +0.71 [+0.40, +1.02] |
+| A − F | 14 NFE | +0.82 [+0.46, +1.19] |
+| A − F | 1.1 full-pass FLOPs | -0.33 [-0.59, -0.04] |
+| A − F | 1.2 full-pass FLOPs | -0.17 [-0.61, +0.16] |
+| A − F | 1.4 full-pass FLOPs | -0.04 [-0.42, +0.27] |
+| D − E | 13 NFE | +2.68 [+1.87, +3.42] |
+| D − E | 14 NFE | +3.12 [+2.36, +3.97] |
+| D − E | 1.1 full-pass FLOPs | +2.11 [+1.41, +2.77] |
+| D − E | 1.2 full-pass FLOPs | +2.80 [+2.05, +3.58] |
+| D − E | 1.4 full-pass FLOPs | +2.98 [+2.15, +3.77] |
+| F − N | 13 NFE | +1.28 [+0.91, +1.66] |
+| F − N | 14 NFE | +1.95 [+1.32, +2.50] |
+| F − N | 1.1 full-pass FLOPs | +1.14 [+0.67, +1.59] |
+| F − N | 1.2 full-pass FLOPs | +1.44 [+0.87, +2.14] |
+| F − N | 1.4 full-pass FLOPs | +1.86 [+1.11, +2.59] |
+| E − N | 13 NFE | +0.46 [+0.12, +0.79] |
+| E − N | 14 NFE | +0.32 [-0.08, +0.71] |
+| E − N | 1.1 full-pass FLOPs | -0.07 [-0.43, +0.26] |
+| E − N | 1.2 full-pass FLOPs | -0.47 [-0.88, -0.07] |
+| E − N | 1.4 full-pass FLOPs | -0.71 [-1.18, -0.25] |
+
+## Sudoku (hard): checker-gated retries, with singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA A10G, replication)
+
+Greedy first pass 86.15%. Soft-decision first pass at Ts = 4 (chosen on boards 0–999): 89.90% (held-out half 92.00%). Singles propagation alone completes 85.45% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|
+| V-cycle retries from level 5 (T = 1) | 92.7 | 94.1 | 94.9 | 95.3 | 95.7 | – | 37% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 92.7 | 95.6 | 97.2 | 98.1 | 98.5 | – | 12% |
+| Soft-decision first pass + twisted V-cycle | 93.8 | 96.2 | 97.5 | 98.2 | 98.6 | – | 12% |
+| Soft decisions throughout + twisted V-cycle | 93.8 | 96.9 | 97.9 | 98.4 | 98.8 | – | 12% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+| C-A0@12 | all | +1.10 [+0.50, +1.65] |
+| C-A0@12 | held-out half | +0.90 [+0.20, +1.60] |
+| B-A@13 | all | +0.61 [+0.04, +1.21] |
+| B-A@13 | held-out half | +0.65 [+0.03, +1.45] |
+| B-A@14 | all | +0.28 [-0.25, +0.77] |
+| B-A@14 | held-out half | +0.45 [-0.12, +1.06] |
+| B-A@15 | all | +0.06 [-0.39, +0.43] |
+| B-A@15 | held-out half | +0.10 [-0.27, +0.63] |
+| A-E@13 | all | +1.54 [+1.07, +2.00] |
+| A-E@13 | held-out half | +1.20 [+0.47, +1.85] |
+| A-E@14 | all | +2.33 [+1.68, +2.95] |
+| A-E@14 | held-out half | +1.60 [+0.87, +2.44] |
+| A-E@15 | all | +2.77 [+2.05, +3.41] |
+| A-E@15 | held-out half | +1.96 [+1.05, +2.75] |
+| B-E@13 | all | +2.15 [+1.51, +2.84] |
+| B-E@13 | held-out half | +1.85 [+1.01, +2.70] |
+| B-E@14 | all | +2.61 [+1.85, +3.37] |
+| B-E@14 | held-out half | +2.05 [+1.09, +3.08] |
+| D-B@14 | all | +0.43 [+0.06, +0.83] |
+| D-B@14 | held-out half | +0.38 [+0.01, +0.96] |
+| B-E@1.2FLOP | all | +2.07 [+1.32, +2.81] |
+| B-E@1.3FLOP | all | +2.39 [+1.63, +3.06] |
+
+## Sudoku (hard): checker-gated retries, without singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA GeForce RTX 4050 Laptop GPU)
+
+Greedy first pass 86.15%. Soft-decision first pass at Ts = 4 (chosen on boards 0–999): 89.90% (held-out half 92.00%). Singles propagation alone completes 85.45% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | 18 NFE | 20 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|---|---|
+| Best-of-N (fresh restarts, T = 1) | 86.2 | 87.9 | 89.5 | 90.5 | 91.4 | 92.6 | 93.5 | 96.3 (33.8) | 35% |
+| Fresh greedy restarts in random symmetry frames | 86.2 | 89.7 | 92.8 | 94.9 | 96.1 | 97.6 | 98.4 | 99.0 (22.3) | 11% |
+| V-cycle retries from level 5 (T = 1) | 86.2 | 88.6 | 90.2 | 91.2 | 92.0 | 92.8 | 93.5 | 94.9 (27.5) | 43% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 86.2 | 91.7 | 94.8 | 96.5 | 97.4 | 98.6 | – | 98.8 (18.5) | 12% |
+| Soft-decision first pass + twisted V-cycle | 89.9 | 93.5 | 95.9 | 97.3 | 98.0 | 98.6 | – | 98.7 (17.9) | 13% |
+| Soft decisions throughout + twisted V-cycle | 89.9 | 94.1 | 96.5 | 97.7 | 98.2 | 98.3 | – | 98.6 (17.8) | 12% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+| C-A0@12 | all | +3.75 [+2.75, +4.75] |
+| C-A0@12 | held-out half | +3.80 [+2.40, +5.00] |
+| E-N@14 | all | +0.73 [+0.20, +1.24] |
+| E-N@14 | held-out half | +0.46 [-0.24, +1.15] |
+| F-N@14 | all | +3.35 [+2.74, +3.96] |
+| F-N@14 | held-out half | +2.73 [+1.86, +3.50] |
+| A-E@13 | all | +3.10 [+2.48, +3.70] |
+| A-E@13 | held-out half | +2.49 [+1.66, +3.31] |
+| A-E@14 | all | +4.64 [+3.76, +5.42] |
+| A-E@14 | held-out half | +3.51 [+2.47, +4.55] |
+| A-E@16 | all | +5.44 [+4.42, +6.42] |
+| A-E@16 | held-out half | +4.16 [+2.93, +5.39] |
+| A-F@13 | all | +2.06 [+1.65, +2.43] |
+| A-F@13 | held-out half | +1.72 [+1.04, +2.31] |
+| A-F@14 | all | +2.03 [+1.40, +2.54] |
+| A-F@14 | held-out half | +1.25 [+0.34, +2.09] |
+| A-F@16 | all | +1.33 [+0.74, +1.90] |
+| A-F@16 | held-out half | +0.84 [-0.08, +1.55] |
+| B-A@13 | all | +1.82 [+0.92, +2.78] |
+| B-A@13 | held-out half | +1.98 [+0.83, +3.11] |
+| B-A@14 | all | +1.04 [+0.27, +1.88] |
+| B-A@14 | held-out half | +1.29 [+0.41, +2.22] |
+| D-B@14 | all | +0.66 [+0.19, +1.15] |
+| D-B@14 | held-out half | +0.36 [-0.27, +0.91] |
+| D-A@13 | all | +2.36 [+1.47, +3.28] |
+| D-A@13 | held-out half | +2.29 [+1.15, +3.40] |
+| D-A@14 | all | +1.70 [+0.93, +2.53] |
+| D-A@14 | held-out half | +1.65 [+0.69, +2.58] |
+| D-E@13 | all | +5.47 [+4.42, +6.50] |
+| D-E@13 | held-out half | +4.78 [+3.37, +6.09] |
+| D-E@14 | all | +6.35 [+5.22, +7.38] |
+| D-E@14 | held-out half | +5.16 [+3.80, +6.38] |
+| D-E@16 | all | +6.16 [+5.06, +7.36] |
+| D-E@16 | held-out half | +4.62 [+3.34, +6.07] |
+| A-E@1.2FLOP | all | +3.29 [+2.55, +4.01] |
+| A-E@1.4FLOP | all | +4.53 [+3.55, +5.40] |
+| D-E@1.2FLOP | all | +5.42 [+4.34, +6.44] |
+| D-E@1.4FLOP | all | +5.75 [+4.70, +6.81] |
+| A-F@1.2FLOP | all | -0.38 [-0.86, +0.07] |
+| A-F@1.4FLOP | all | -0.43 [-0.99, -0.00] |
+
+Further paired differences (percentage points, mean [95% CI]; FLOPs counted as token positions processed, one full pass = 1, a retry in a new frame recomputes the prompt):
+
+| Comparison | Budget | Difference |
+|---|---|---|
+| D − F | 13 NFE | +4.43 [+3.52, +5.43] |
+| D − F | 14 NFE | +3.73 [+2.83, +4.72] |
+| D − F | 1.1 full-pass FLOPs | +2.76 [+1.88, +3.73] |
+| D − F | 1.2 full-pass FLOPs | +1.75 [+0.93, +2.63] |
+| D − F | 1.4 full-pass FLOPs | +0.79 [+0.23, +1.46] |
+| A − F | 13 NFE | +2.06 [+1.64, +2.44] |
+| A − F | 14 NFE | +2.03 [+1.45, +2.59] |
+| A − F | 1.1 full-pass FLOPs | -0.04 [-0.28, +0.21] |
+| A − F | 1.2 full-pass FLOPs | -0.38 [-0.91, +0.07] |
+| A − F | 1.4 full-pass FLOPs | -0.43 [-1.01, +0.04] |
+| D − E | 13 NFE | +5.47 [+4.62, +6.53] |
+| D − E | 14 NFE | +6.35 [+5.36, +7.57] |
+| D − E | 1.1 full-pass FLOPs | +4.57 [+3.77, +5.60] |
+| D − E | 1.2 full-pass FLOPs | +5.42 [+4.54, +6.47] |
+| D − E | 1.4 full-pass FLOPs | +5.75 [+4.73, +6.93] |
+| F − N | 13 NFE | +1.74 [+1.36, +2.12] |
+| F − N | 14 NFE | +3.35 [+2.71, +3.99] |
+| F − N | 1.1 full-pass FLOPs | +1.50 [+0.99, +2.01] |
+| F − N | 1.2 full-pass FLOPs | +3.17 [+2.41, +3.94] |
+| F − N | 1.4 full-pass FLOPs | +4.18 [+3.35, +5.08] |
+| E − N | 13 NFE | +0.70 [+0.31, +1.08] |
+| E − N | 14 NFE | +0.73 [+0.19, +1.21] |
+| E − N | 1.1 full-pass FLOPs | -0.31 [-0.83, +0.09] |
+| E − N | 1.2 full-pass FLOPs | -0.50 [-1.04, -0.02] |
+| E − N | 1.4 full-pass FLOPs | -0.78 [-1.34, -0.26] |
+
+## Sudoku (medium): checker-gated retries, with singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA GeForce RTX 4050 Laptop GPU)
+
+Greedy first pass 96.40%. Soft-decision first pass at Ts = 4 (chosen on boards 0–999): 97.75% (held-out half 97.60%). Singles propagation alone completes 98.80% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | 18 NFE | 20 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|---|---|
+| Best-of-N (fresh restarts, T = 1) | 99.5 | – | – | – | – | – | – | 99.9 (12.9) | 51% |
+| Fresh greedy restarts in random symmetry frames | 99.5 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.3) | 10% |
+| V-cycle retries from level 5 (T = 1) | 99.5 | – | – | – | – | – | – | 99.8 (12.6) | 57% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 99.5 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.2) | 13% |
+| Soft-decision first pass + twisted V-cycle | 99.5 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 (12.2) | 17% |
+| Soft decisions throughout + twisted V-cycle | 99.5 | – | – | – | – | – | – | 99.9 (12.3) | 17% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+| C-A0@12 | all | -0.05 [-0.35, +0.20] |
+| C-A0@12 | held-out half | -0.10 [-0.30, +0.00] |
+
+Further paired differences (percentage points, mean [95% CI]; FLOPs counted as token positions processed, one full pass = 1, a retry in a new frame recomputes the prompt):
+
+| Comparison | Budget | Difference |
+|---|---|---|
+| A − F | 13 NFE | +0.00 [+0.00, +0.00] |
+
+## Sudoku (medium): checker-gated retries, with singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA A10G, replication)
+
+Greedy first pass 96.40%. Soft-decision first pass at Ts = 4 (chosen on boards 0–999): 97.75% (held-out half 97.60%). Singles propagation alone completes 98.80% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|
+| V-cycle retries from level 5 (T = 1) | 99.5 | – | – | – | – | – | 57% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 99.5 | 100.0 | 100.0 | 100.0 | 100.0 | – | 13% |
+| Soft-decision first pass + twisted V-cycle | 99.5 | 100.0 | 100.0 | 100.0 | 100.0 | – | 17% |
+| Soft decisions throughout + twisted V-cycle | 99.5 | – | – | – | – | – | 17% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+| C-A0@12 | all | -0.05 [-0.35, +0.20] |
+| C-A0@12 | held-out half | -0.10 [-0.30, +0.00] |
+
+## Sudoku (medium): checker-gated retries, without singles propagation (2000 boards, seeds [0, 1, 2], NVIDIA GeForce RTX 4050 Laptop GPU)
+
+Greedy first pass 96.40%. Soft-decision first pass at Ts = 4 (chosen on boards 0–999): 97.75% (held-out half 97.60%). Singles propagation alone completes 98.80% of boards. Accuracy (%) at a mean NFE budget per board; – where the arm's retries ran out before the budget.
+
+| Method | 12 NFE | 13 NFE | 14 NFE | 15 NFE | 16 NFE | 18 NFE | 20 NFE | Final (mean NFE) | Duplicate retries |
+|---|---|---|---|---|---|---|---|---|---|
+| Best-of-N (fresh restarts, T = 1) | 96.4 | 98.3 | 98.8 | 99.0 | 99.2 | – | – | 99.2 (16.6) | 56% |
+| Fresh greedy restarts in random symmetry frames | 96.4 | 99.7 | – | – | – | – | – | 99.9 (13.3) | 17% |
+| V-cycle retries from level 5 (T = 1) | 96.4 | 98.7 | 99.0 | – | – | – | – | 99.1 (14.8) | 60% |
+| Symmetry-twisted V-cycle (level 5, T = 0) | 96.4 | – | – | – | – | – | – | 99.9 (12.8) | 20% |
+| Soft-decision first pass + twisted V-cycle | 97.8 | – | – | – | – | – | – | 99.9 (12.7) | 20% |
+| Soft decisions throughout + twisted V-cycle | 97.8 | – | – | – | – | – | – | 99.8 (12.8) | 21% |
+
+Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):
+
+| Comparison | Boards | Difference |
+|---|---|---|
+| C-A0@12 | all | +1.35 [+0.70, +2.05] |
+| C-A0@12 | held-out half | +1.50 [+0.50, +2.60] |
+| E-N@14 | all | +0.21 [-0.04, +0.47] |
+| E-N@14 | held-out half | +0.29 [-0.08, +0.75] |
+
+Further paired differences (percentage points, mean [95% CI]; FLOPs counted as token positions processed, one full pass = 1, a retry in a new frame recomputes the prompt):
+
+| Comparison | Budget | Difference |
+|---|---|---|
+| D − F | 1.1 full-pass FLOPs | -0.01 [-0.16, +0.12] |
+| A − F | 1.1 full-pass FLOPs | +0.03 [-0.07, +0.19] |
+| D − E | 1.1 full-pass FLOPs | +1.20 [+0.68, +1.81] |
+| F − N | 13 NFE | +1.37 [+0.92, +2.06] |
+| F − N | 1.1 full-pass FLOPs | +1.19 [+0.68, +1.69] |
+| E − N | 13 NFE | +0.32 [+0.08, +0.64] |
+| E − N | 14 NFE | +0.21 [-0.04, +0.48] |
+| E − N | 1.1 full-pass FLOPs | -0.03 [-0.26, +0.21] |
+| E − N | 1.2 full-pass FLOPs | -0.03 [-0.24, +0.20] |
+
+## Error diffusion within a level (Floyd–Steinberg), stage 1 (3 seeds × 256 samples)
+
+Each arm samples every level with error diffusion of strength γ and carry ρ (γ = 0 is NCM). Ratio: corpus gen. PPL against the reference sampler with the same seeds, paired bootstrap over samples; *frontier*: ratio against NCM's own temperature curve at the same corpus distinct-2.
+
+| Task | Arm | Gen. PPL | Ratio [95% CI] | Corpus distinct-2 change | Frontier ratio |
+|---|---|---|---|---|---|
+| tinystories | reference (NCM) | 16.67 | – | – | – |
+| tinystories | T=0.95 | 15.55 | 0.933 [0.914, 0.952] | -2.0% | – |
+| tinystories | T=0.9 | 14.83 | 0.890 [0.869, 0.911] | -3.4% | – |
+| tinystories | T=0.85 | 14.50 | 0.869 [0.848, 0.891] | -5.1% | – |
+| tinystories | g=0.5,r=0.5 | 16.59 | 0.995 [0.979, 1.013] | -0.3% | 0.990 |
+| tinystories | g=0.5,r=1.0 | 16.41 | 0.984 [0.963, 1.007] | -1.1% | 0.964 |
+| tinystories | g=1.0,r=0.5 | 16.53 | 0.991 [0.972, 1.012] | -0.4% | 0.987 |
+| tinystories | g=1.0,r=1.0 | 16.35 | 0.981 [0.958, 1.006] | -0.9% | 0.968 |
+| tinystories | g=2.0,r=0.5 | 16.19 | 0.971 [0.949, 0.994] | -0.7% | 0.978 |
+| tinystories | g=2.0,r=1.0 | 16.31 | 0.978 [0.954, 1.006] | -1.4% | 0.952 |
+| lm1b_small | reference (NCM) | 90.64 | – | – | – |
+| lm1b_small | T=0.95 | 87.84 | 0.969 [0.948, 0.991] | -3.3% | – |
+| lm1b_small | T=0.9 | 82.61 | 0.911 [0.888, 0.935] | -7.5% | – |
+| lm1b_small | T=0.85 | 79.76 | 0.880 [0.852, 0.906] | -10.6% | – |
+| lm1b_small | g=0.5,r=0.5 | 92.14 | 1.017 [0.999, 1.033] | +0.1% | 1.000 |
+| lm1b_small | g=0.5,r=1.0 | 90.53 | 0.999 [0.975, 1.021] | -0.8% | 0.993 |
+| lm1b_small | g=1.0,r=0.5 | 90.57 | 0.999 [0.980, 1.018] | -0.2% | 0.998 |
+| lm1b_small | g=1.0,r=1.0 | 90.63 | 1.000 [0.973, 1.024] | -1.4% | 0.987 |
+| lm1b_small | g=2.0,r=0.5 | 90.08 | 0.994 [0.973, 1.016] | -0.4% | 0.996 |
+| lm1b_small | g=2.0,r=1.0 | 91.35 | 1.008 [0.978, 1.036] | -2.2% | 0.979 |
+
+Stage 2 (LM1B-medium, γ = 2, ρ = 0.5, m = 6, 3 seeds × 256): ratios against the reference sampler.
+
+| Arm | Gen. PPL | Ratio [95% CI] |
+|---|---|---|
+| ed | 87.52 | 1.002 [0.979, 1.025] |
+| vcycle|m=6 | 67.99 | 0.779 [0.766, 0.793] |
+| vcycle+ed|m=6 | 68.21 | 0.781 [0.768, 0.795] |
+| ed+vcycle+ed|m=6 | 68.74 | 0.787 [0.768, 0.807] |
+
+Against the plain V-cycle (does error diffusion add to it?):
+
+| Arm | Ratio vs V-cycle [95% CI] |
+|---|---|
+| vcycle+ed|m=6 | 1.003 [0.996, 1.011] |
+| ed+vcycle+ed|m=6 | 1.011 [0.989, 1.033] |
+

@@ -181,6 +181,30 @@ class LevelDecoder:
     def sample(self, logits, temperature=0.0, top_k=0, top_p=1.0):
         return self.net._sample_level_raw(logits, temperature, top_k, top_p)
 
+    @torch.no_grad()
+    def sample_ed(self, k, logits, temperature, gamma, rho):
+        """Error diffusion within level k (Floyd & Steinberg 1976). Positions are scanned left to right; each one
+        carries rho times the previous position's error (expected codebook vector + carried error - chosen code
+        vector) and its logits are tilted by gamma * <E[c], carried error> / spread, so neighbouring codes are
+        anti-correlated and their running average tracks the model's mean. Sampling is Gumbel-max with noise drawn
+        once per level, so gamma = 0 is an exact sample of p(r_k | ...) and runs with the same seed share noise."""
+        lg = logits.float() / temperature
+        B, l, V = lg.shape
+        g = -torch.empty_like(lg).exponential_().clamp_min(1e-30).log()
+        if gamma == 0:
+            return (lg + g).argmax(-1)
+        E = self.vq.embeddings[k].weight.float()
+        scale = gamma / (E - E.mean(0)).pow(2).sum(-1).mean()  # gamma = 1: one codebook spread of error ~ 1 nat
+        mu = lg.softmax(-1) @ E  # (B, l, D): the model's expected code vector per position
+        out = torch.empty(B, l, dtype=torch.long, device=lg.device)
+        e = torch.zeros(B, E.shape[1], device=lg.device)
+        for i in range(l):
+            carried = rho * e
+            c = (lg[:, i] + scale * (carried @ E.T) + g[:, i]).argmax(-1)
+            e = mu[:, i] + carried - E[c]
+            out[:, i] = c
+        return out
+
     # ---- tokenizer -------------------------------------------------------------------------
     @torch.no_grad()
     def recon(self, k, codes_k):
@@ -230,7 +254,7 @@ class LevelDecoder:
     # ---- sampling --------------------------------------------------------------------------
     @torch.no_grad()
     def run(self, prefix, start=0, codes=None, keep=None, temperature=0.0, top_k=0, top_p=1.0,
-            conf=None):
+            conf=None, ed=None):
         """Sample levels start..K-1 coarse to fine.
 
         start: int, or LongTensor (B,) for a per-board start level (K = leave the board as given).
@@ -239,6 +263,8 @@ class LevelDecoder:
                keep codes[k] and the rest are resampled (valid because codes are conditionally
                independent within a level).
         conf:  optional list; receives per level the generator's probability of the chosen code.
+        ed:    optional (gamma, rho): sample each level with sample_ed (temperature > 0, no top-k/top-p); None keeps
+               the released sampler unchanged.
         Returns (codes, z_hat^(K)). self.nfe counts one forward per level per batch, so with a
         per-board start use board_nfe(start) for honest per-board accounting.
         """
@@ -254,7 +280,11 @@ class LevelDecoder:
                     conf.append(torch.ones(c.shape, device=dev))
             else:
                 lg = self.logits(k, prefix, z)
-                c = self.sample(lg, temperature, top_k, top_p)
+                if ed is None:
+                    c = self.sample(lg, temperature, top_k, top_p)
+                else:
+                    assert temperature > 0 and top_k == 0 and top_p >= 1.0, "error diffusion samples the full softmax"
+                    c = self.sample_ed(k, lg, temperature, *ed)
                 if keep is not None and k in keep:
                     c = torch.where(keep[k], codes[k], c)
                 if codes is not None and bool(given.any()):

@@ -177,7 +177,7 @@ Record anything close here and state clearly how this differs.
 
 ## 13. Outreach checklist
 
-- [x] One chart: Sudoku accuracy vs NFE, baseline vs V-cycle vs best-of-N (`results/sudoku_hard_n2000_T1.0_acc_vs_nfe.png`). The stronger chart for outreach is LM1B (`results/lm1b_small_ppl_vs_nfe.png`).
+- [x] Charts: `figures/fig1_restriction_effect.png` (text) and `figures/fig6_sudoku_retries.png` (Sudoku); all figures are drawn by `experiments/figures.py`.
 - [ ] Two or three key numbers written in the email body.
 - [ ] A public GitHub repo with code and results (full URL, no shorteners, no zips).
 - [ ] A specific subject line, e.g., *"NCM: multigrid V-cycle decoding improves Sudoku accuracy (short result)"*.
@@ -430,3 +430,42 @@ All numbers are in `results/SUMMARY.md` and the README.
 - **Free-running text:** a clear, robust win. Four independent measures agree: two scorers from different model families, MAUVE and a judge. Medium plus one V-cycle beats the 2.3× larger model's single pass at less compute.
 - **Prompted tasks:** a small, significant polish on automatic metrics that a judge barely notices; classifier-free guidance is the bigger lever on WMT14.
 - **Still missing:** a human evaluation and the CFG and MBR comparisons at equal compute.
+
+### 2026-10-22 (literature search, zero-compute pilots, error diffusion, Sudoku symmetry frames)
+
+**Literature search for a partner method** (two rounds of parallel searches over multigrid, Monte Carlo, coding
+theory, combinatorial search, inverse problems, NLP decoding, physics and control, plus a prior-art check of VAR,
+RVQ-audio, MaskGIT and diffusion-LM methods). Every candidate was checked against the full text of the NCM paper.
+- Reranking the draft and V-cycle outputs by NCM's own ELBO (maximum mutual information decoding; Li et al., 2016)
+  was the best-supported candidate on WMT14: a GPT-2-small per-sentence choice between draft and V-cycle gave
+  21.73 → 22.56 cased BLEU. It was **rejected as extra compute**; the remaining work targeted zero-compute ideas.
+- Closest prior art found: DiverseVAR scale-travel (latent re-quantization), TTS-VAR and beam search over scales,
+  VPG (guidance with a corrupted prefix), Lattice Deduction Transformers (random symmetry frames for Sudoku), POMO,
+  Mixture of Inputs (posterior-mean inputs). Details in `docs/prior_art.md`.
+
+**Error diffusion within a level** (Floyd & Steinberg, 1976; `experiments/ed_sweep.py`, `LevelDecoder.sample_ed`;
+run on an AWS g5.2xlarge, about 28 minutes). Stage 1 (3 seeds × 256): best setting γ = 2, ρ = 0.5 gave LM1B-small
+×0.994 [0.973, 1.016] and TinyStories ×0.971 [0.949, 0.994]; no setting met the pre-registered bar. Stage 2
+(LM1B-medium): V-cycle with error diffusion / V-cycle ×1.003 [0.996, 1.011]. **Dead.**
+
+**Zero-compute pilots** (single seed, exploratory; scripts kept outside the repository). All negative on text:
+Voronoi-consistent sampling (×0.998), within-level Potts and copula couplings fitted on real codes (×0.96–0.995, CIs
+include 1; within-level dependence is only 0.3–0.6% of the code NLL), inversion of the training-time corruption
+channel (on NCM's temperature frontier), small-model draft + restriction + large-model fine levels (0.961 of the
+frontier, n.s.). On Sudoku: neighbourhood search and keep-best acceptance 0.0 ± 0.3 points; limited discrepancy search
++0.65 points. Two Sudoku ideas survived: random symmetry frames and soft (posterior-mean) decisions.
+
+**Sudoku stacking run** (`experiments/sudoku_stack.py`; first on an AWS g5.xlarge, about 13 minutes, then the final
+run on the laptop GPU; 3 seeds × 2,000 boards per difficulty). Accuracy on hard boards at 14 mean NFE, NCM alone /
+with singles propagation:
+- best-of-N 89.5 / 94.5; V-cycle retries 90.2 / 94.8; fresh restarts in random frames 92.8 / 96.4;
+- symmetry-twisted V-cycle 94.8 / 97.2; soft decisions + twisted V-cycle **96.5 / 97.9**.
+- The frame change is the main lever (+3.35 points over best-of-N, NCM alone). The twisted V-cycle adds +2.03 over
+  fresh restarts in random frames per NFE but ties them at matched FLOPs. Soft decisions add +3.75 in a single pass
+  (held-out half +3.80) and +1.70 on top of the twisted retries.
+- No wrong board was accepted in any run. The A10G replication agrees with the laptop run to within 0.2 points.
+
+**Write-up.** README rewritten in a paper-like structure; figures moved to `figures/` and drawn by
+`experiments/figures.py` with one style (`vcycle/plotstyle.py`, PNG at 300 dpi and PDF); `experiments/analyze.py` now
+writes tables only, including the Sudoku stacking and error-diffusion sections. The old charts under `results/*.png`
+were removed.

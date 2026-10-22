@@ -1,4 +1,4 @@
-"""Aggregate all phases into results/SUMMARY.md, results/summary.json and the accuracy-vs-NFE chart.
+"""Aggregate all experiments into results/SUMMARY.md and results/summary.json (figures: experiments/figures.py).
 
 Phase 3 comparisons are made at matched compute: for every method and seed, accuracy is linearly
 interpolated at fixed mean-NFE budgets along its round-by-round curve. Confidence intervals come
@@ -173,62 +173,6 @@ for gname, seeds in groups.items():
     lines.append("")
     summary[f"phase3_{gname}"] = {"point": point, "diffs": diffs, "seeds": len(seeds), "n": n, "meta": meta.get("temperature")}
 
-    # Chart: accuracy vs mean NFE for the headline comparison (<= 4 series, fixed palette order).
-    try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-    except ImportError:
-        continue
-    best_m = max((k for k in keys if k.startswith("vcycle|")), key=lambda k: point[k][16] if not np.isnan(point[k][16]) else -1,
-                 default=None)
-    series = [("fresh|m=0", "Fresh restart (best-of-N)", "#eb6834")]
-    if best_m:
-        series.insert(0, (best_m, f"V-cycle, restart level {best_m.split('=')[1]}", "#2a78d6"))
-        series.append((best_m.replace("vcycle", "no-restrict"), f"No restriction, level {best_m.split('=')[1]}", "#1baf7a"))
-    if "vcycle-accept|m=0" in keys:
-        series.append(("vcycle-accept|m=0", "V-cycle, residual-chosen level", "#eda100"))
-    ink, ink2, grid, axis, surf = "#0b0b0b", "#52514e", "#e1e0d9", "#c3c2b7", "#fcfcfb"
-    fig, ax = plt.subplots(figsize=(7.2, 4.4), dpi=160)
-    fig.patch.set_facecolor(surf)
-    ax.set_facecolor(surf)
-    ends = []
-    for k, label, color in series:
-        if k not in data:
-            continue
-        xs = np.mean([nr.mean(-1) for nr, _ in data[k]], 0)
-        ys = np.mean([[((sr >= 0) & (sr <= r)).mean() for r in range(nr.shape[0])] for nr, sr in data[k]], 0)
-        ax.plot(xs, 100 * ys, color=color, lw=2, marker="o", ms=4.5, mec=surf, mew=1, label=label, zorder=3)
-        ends.append([xs[-1], 100 * ys[-1], label])
-    # Direct labels at the line ends, nudged apart vertically so they never overlap.
-    ends.sort(key=lambda e: e[1])
-    for i, e in enumerate(ends):
-        e.append(e[1] if i == 0 else max(e[1], ends[i - 1][3] + 0.32))
-    label_x = max(e[0] for e in ends) + 0.5  # a label column right of every line, with thin leaders
-    for x_, y_, label, y_text in ends:
-        ax.annotate(label, (x_, y_), xytext=(label_x, y_text), textcoords="data", va="center", fontsize=8,
-                    color=ink2, arrowprops=dict(arrowstyle="-", color=axis, lw=0.6, shrinkA=0, shrinkB=3))
-    if gname.startswith("hard") and "hard" in PAPER:
-        ax.axhline(PAPER["hard"], color=axis, lw=1, ls=(0, (4, 3)), zorder=1)
-        ax.annotate(f"NCM paper, 12 NFE: {PAPER['hard']}%", (14.2, PAPER["hard"]), xytext=(0, 3),
-                    textcoords="offset points", fontsize=8, color=ink2)
-    ax.set_xlabel("Generator forward passes per board (mean NFE)", color=ink2, fontsize=9)
-    ax.set_ylabel("Solved boards (%)", color=ink2, fontsize=9)
-    ax.set_title(f"Sudoku ({gname.split('_')[0]}): accuracy vs compute, checker-gated retries", color=ink, fontsize=10,
-                 loc="left")
-    ax.grid(True, color=grid, lw=0.6)
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(axis)
-    ax.tick_params(colors=ink2, labelsize=8)
-    ax.legend(frameon=False, fontsize=8, labelcolor=ink2, loc="lower right")
-    ax.set_xlim(11.5, label_x + 5.5)
-    fig.tight_layout()
-    out = os.path.join(RESULTS, f"sudoku_{gname}_acc_vs_nfe.png")
-    fig.savefig(out, facecolor=surf)
-    print("chart:", out)
-
 # ---- LM1B ---------------------------------------------------------------------------------------
 lm = {}
 TEXT_NAME = lambda size: "TinyStories" if size == "tinystories" else f"LM1B-{size}"
@@ -272,6 +216,8 @@ for size, runs in lm.items():
                 continue
             ratio = cppl(a_, idx) / cppl(b_, idx)
             pt = cppl(a_, np.arange(N)) / cppl(b_, np.arange(N))
+            summary.setdefault("text_ratios", {}).setdefault(size, {})[f"{a_} / {b_}"] = [
+                float(pt), float(np.percentile(ratio, 2.5)), float(np.percentile(ratio, 97.5))]
             lines.append(f"| {show(a_)} / {show(b_)} | {pt:.3f} [{np.percentile(ratio, 2.5):.3f}, {np.percentile(ratio, 97.5):.3f}] |")
         lines.append("")
     diag = [rr for rr, _ in runs]
@@ -350,99 +296,6 @@ for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_sweep_*_s*.json"))):
     lines.append("")
     summary[f"lm1b_sweep_{sw['size']}_s{sw['seed']}"] = sw
 
-    # Chart: gen. PPL vs extra NFE for single V-cycles and the no-restriction control at the same levels.
-    try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-    except ImportError:
-        continue
-    ink, ink2, grid, axis, surf = "#0b0b0b", "#52514e", "#e1e0d9", "#c3c2b7", "#fcfcfb"
-    fig, ax = plt.subplots(figsize=(7.2, 4.2), dpi=160)
-    fig.patch.set_facecolor(surf)
-    ax.set_facecolor(surf)
-    V = sw["variants"]
-    base_ppl = V["baseline"]["gen_ppl"]
-    for prefix_, label, color in (("vcycle", "V-cycle (re-encode, then resample)", "#2a78d6"),
-                                  ("no-restrict", "No restriction (resample only)", "#1baf7a")):
-        pts = sorted((r["extra_nfe"], r["gen_ppl"], int(re.search(r"m=(\d+)", k).group(1)))
-                     for k, r in V.items() if k.startswith(prefix_ + "|") and k.endswith("|c=1"))
-        if not pts:
-            continue
-        ax.plot([p_[0] for p_ in pts], [p_[1] for p_ in pts], color=color, lw=2, marker="o", ms=4.5, mec=surf, mew=1,
-                label=label, zorder=3)
-        for x_, y_, m_ in pts:
-            ax.annotate(f"m={m_}", (x_, y_), xytext=(0, -13), textcoords="offset points", ha="center", fontsize=7.5,
-                        color=ink2)
-    iters = sorted((r["extra_nfe"], r["gen_ppl"], k) for k, r in V.items() if k.startswith("vcycle|") and not k.endswith("|c=1"))
-    for i_, (x_, y_, k) in enumerate(iters):
-        m_, c_ = re.search(r"m=(\d+)\|c=(\d+)", k).groups()
-        ax.plot([x_], [y_], marker="D", ms=4.5, color="#2a78d6", mec=surf, mew=1, zorder=3,
-                label="V-cycle, repeated" if i_ == 0 else None)
-        ax.annotate(f"m={m_} ×{c_}", (x_, y_), xytext=(0, -13), textcoords="offset points", ha="center", fontsize=7.5,
-                    color=ink2)
-    ax.axhline(base_ppl, color=axis, lw=1, ls=(0, (4, 3)), zorder=1)
-    xmax = max(r["extra_nfe"] for r in V.values()) + 1
-    ax.annotate(f"NCM single pass: {base_ppl:.1f}", (xmax, base_ppl), xytext=(0, 4), textcoords="offset points",
-                ha="right", fontsize=8, color=ink2)
-    ax.set_ylim(min(r["gen_ppl"] for r in V.values()) - 4, base_ppl + 3)
-    ax.set_xlabel("Extra generator forward passes per sample (one NCM pass = 11)", color=ink2, fontsize=9)
-    ax.set_ylabel("Gen. perplexity (GPT-2 large), lower is better", color=ink2, fontsize=9)
-    ax.set_title(f"LM1B-{sw['size']}: V-cycle vs resampling at equal compute ({sw['n']} samples, seed {sw['seed']})",
-                 color=ink, fontsize=10, loc="left")
-    ax.grid(True, color=grid, lw=0.6)
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(axis)
-    ax.tick_params(colors=ink2, labelsize=8)
-    ax.legend(frameon=False, fontsize=8, labelcolor=ink2, loc="center right")
-    ax.set_xlim(0, xmax + 0.5)
-    fig.tight_layout()
-    out_png = os.path.join(RESULTS, f"lm1b_{sw['size']}_ppl_vs_nfe.png")
-    fig.savefig(out_png, facecolor=surf)
-    print("chart:", out_png)
-
-    # Chart: the perplexity / entropy plane. Lowering the temperature traces NCM's own frontier.
-    temps = sorted(((float(k.split("T=")[1]), r) for k, r in V.items() if k.startswith("baseline|T=")), reverse=True)
-    if temps:
-        fig, ax = plt.subplots(figsize=(7.2, 4.2), dpi=160)
-        fig.patch.set_facecolor(surf)
-        ax.set_facecolor(surf)
-        fr = [(1.0, V["baseline"])] + temps
-        ax.plot([r["entropy"] for _, r in fr], [r["gen_ppl"] for _, r in fr], color="#898781", lw=2, marker="o", ms=5,
-                mec=surf, mew=1, label="NCM, lower sampling temperature", zorder=4)
-        for T, r in fr:
-            ax.annotate(f"T={T:g}" + (" (NCM default)" if T == 1.0 else ""), (r["entropy"], r["gen_ppl"]),
-                        xytext=(-6, 4), textcoords="offset points", ha="right", fontsize=7.5, color=ink2)
-        for prefix_, label, color in (("vcycle", "V-cycle (restart level m, × cycles)", "#2a78d6"),
-                                      ("no-restrict", "No restriction, same levels (m = 4, 6, 8, 10)", "#1baf7a")):
-            pts = [(r["entropy"], r["gen_ppl"], k) for k, r in V.items() if k.startswith(prefix_ + "|")]
-            ax.scatter([p_[0] for p_ in pts], [p_[1] for p_ in pts], s=28, color=color, edgecolor=surf, linewidth=1,
-                       label=label, zorder=3)
-            if prefix_ == "vcycle":  # the control points cluster at the baseline; the legend names them
-                for x_, y_, k in pts:
-                    m_, c_ = re.search(r"m=(\d+)\|c=(\d+)", k).groups()
-                    crowded = any(0 < x2 - x_ < 0.012 and abs(y2 - y_) < 1.5 for x2, y2, _ in pts)
-                    ax.annotate(f"m={m_}" + (f" ×{c_}" if c_ != "1" else ""), (x_, y_),
-                                xytext=(0, -13) if crowded else (6, -3), ha="center" if crowded else "left",
-                                textcoords="offset points", fontsize=7.5, color=ink2)
-        ax.set_xlabel("Unigram entropy of samples (higher = more diverse)", color=ink2, fontsize=9)
-        ax.set_ylabel("Gen. perplexity (GPT-2 large), lower is better", color=ink2, fontsize=9)
-        ax.set_title(f"LM1B-{sw['size']}: quality vs diversity (seed {sw['seed']}, {sw['n']} samples)", color=ink,
-                     fontsize=10, loc="left")
-        ax.grid(True, color=grid, lw=0.6)
-        for side in ("top", "right"):
-            ax.spines[side].set_visible(False)
-        for side in ("left", "bottom"):
-            ax.spines[side].set_color(axis)
-        ax.tick_params(colors=ink2, labelsize=8)
-        ax.legend(frameon=False, fontsize=8, labelcolor=ink2, loc="upper left")
-        fig.tight_layout()
-        out_png = os.path.join(RESULTS, f"lm1b_{sw['size']}_ppl_vs_entropy.png")
-        fig.savefig(out_png, facecolor=surf)
-        print("chart:", out_png)
-
 # ---- LM1B iterated V-cycles (convergence) -----------------------------------------------------------
 for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_converge_*_s*.json"))):
     cv = json.load(open(path))
@@ -480,83 +333,6 @@ for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_converge_*_s*.json"))):
                          f"{r['agree_draft']:.3f} / {r['agree_prev']:.3f} |")
     lines.append("")
     summary[f"lm1b_converge_{cv['size']}_s{cv['seed']}"] = cv
-
-    # Chart: two panels, one scale each. Left: PPL against compute. Right: PPL against cross-sample diversity, with
-    # NCM's own temperature frontier when the sweep has it for this size and seed. Gray and green never share a panel.
-    try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-    except ImportError:
-        continue
-    ink, ink2, grid, axis, surf, blue, green, gray = "#0b0b0b", "#52514e", "#e1e0d9", "#c3c2b7", "#fcfcfb", "#2a78d6", "#1baf7a", "#898781"
-    style = {8: "-", 6: (0, (4, 2))}
-    fig, (axl, axr) = plt.subplots(1, 2, figsize=(10.4, 4.3), dpi=160)
-    fig.patch.set_facecolor(surf)
-    runs_ = sorted(cv["runs"].values(), key=lambda r: -r["m"])
-    base_ppl = runs_[0]["cycles"][0]["gen_ppl"]
-    for run in runs_:
-        cy, ls = run["cycles"], style.get(run["m"], ":")
-        xs, ys = [r["extra_nfe"] for r in cy], [r["gen_ppl"] for r in cy]
-        axl.plot(xs, ys, color=blue, lw=2, ls=ls, marker="o", ms=4.5, mec=surf, mew=1, zorder=3,
-                 label=f"V-cycle, m = {run['m']} (one point per cycle)")
-        axl.annotate(f"m = {run['m']}, ×{cy[-1]['cycle']}", (xs[-1], ys[-1]), xytext=(6, 0), textcoords="offset points",
-                     va="center", fontsize=7.5, color=ink2)
-        d2, pp = [r["corpus_distinct2"] for r in cy], [r["gen_ppl"] for r in cy]
-        axr.plot(d2, pp, color=blue, lw=2, ls=ls, marker="o", ms=4.5, mec=surf, mew=1, zorder=3,
-                 label=f"V-cycle, m = {run['m']}, cycles 0–{cy[-1]['cycle']}")
-        axr.annotate(f"m = {run['m']} ×{cy[-1]['cycle']}", (d2[-1], pp[-1]), xytext=(0, -12), textcoords="offset points",
-                     ha="center", fontsize=7.5, color=ink2)
-    nr = [(r["no_restrict"]["extra_nfe"], r["no_restrict"]["gen_ppl"], r["m"]) for r in runs_ if "no_restrict" in r]
-    if nr:
-        axl.scatter([x for x, _, _ in nr], [y for _, y, _ in nr], s=36, marker="s", color=green, edgecolor=surf, linewidth=1,
-                    zorder=4, label="No restriction, same levels (one redraw)")
-        for x, y, m_ in nr:
-            on_base = abs(y - base_ppl) < 1.0  # keep the label off the dashed single-pass line
-            axl.annotate(f"no restriction, m = {m_}", (x, y), xytext=(7, 6) if on_base else (7, 0), textcoords="offset points",
-                         va="bottom" if on_base else "center", fontsize=7.5, color=ink2)
-    axl.axhline(base_ppl, color=axis, lw=1, ls=(0, (4, 3)), zorder=1)
-    xmax_l = max(r["cycles"][-1]["extra_nfe"] for r in runs_) * 1.15 + 1
-    axl.annotate(f"NCM single pass: {base_ppl:.1f}", (xmax_l, base_ppl), xytext=(0, 4), textcoords="offset points", ha="right",
-                 fontsize=8, color=ink2)
-    sw_path = os.path.join(RESULTS, f"lm1b_sweep_{cv['size']}_s{cv['seed']}.json")
-    if os.path.exists(sw_path):
-        V = json.load(open(sw_path))["variants"]
-        fr = sorted([(1.0, V["baseline"])] + [(float(k.split("T=")[1]), r) for k, r in V.items() if k.startswith("baseline|T=")],
-                    reverse=True)
-        axr.plot([r["corpus_distinct2"] for _, r in fr], [r["gen_ppl"] for _, r in fr], color=gray, lw=2, marker="o", ms=5,
-                 mec=surf, mew=1, zorder=2, label="NCM, lower sampling temperature")
-        for T, r in fr:
-            axr.annotate(f"T = {T:g}" + (" (NCM default)" if T == 1.0 else ""), (r["corpus_distinct2"], r["gen_ppl"]),
-                         xytext=(-6, 4) if T == 1.0 else (0, 7), textcoords="offset points", ha="right" if T == 1.0 else "center",
-                         fontsize=7.5, color=ink2)
-    for ax_, xl, title in ((axl, "Extra generator forward passes per sample (one NCM pass = 11)", "Gen. perplexity vs compute"),
-                           (axr, "Corpus distinct-2 across samples (higher = more diverse)", "Gen. perplexity vs diversity")):
-        ax_.set_facecolor(surf)
-        ax_.set_xlabel(xl, color=ink2, fontsize=8.5)
-        ax_.set_ylabel("Gen. perplexity (GPT-2 large), lower is better", color=ink2, fontsize=8.5)
-        ax_.set_title(title, color=ink, fontsize=9.5, loc="left")
-        ax_.grid(True, color=grid, lw=0.6)
-        for side in ("top", "right"):
-            ax_.spines[side].set_visible(False)
-        for side in ("left", "bottom"):
-            ax_.spines[side].set_color(axis)
-        ax_.tick_params(colors=ink2, labelsize=8)
-    axl.legend(frameon=False, fontsize=7.5, labelcolor=ink2, loc="upper right", bbox_to_anchor=(1.0, 0.8))
-    axr.legend(frameon=False, fontsize=7.5, labelcolor=ink2, loc="upper left")
-    axl.set_xlim(-0.5, xmax_l)
-    lo = min(r["gen_ppl"] for run in runs_ for r in run["cycles"])
-    for ax_ in (axl, axr):
-        ax_.set_ylim(lo - 7, base_ppl + 6)  # room for the end labels under the lowest point
-    x0, x1 = axr.dataLim.x0, axr.dataLim.x1
-    axr.set_xlim(x0 - 0.08 * (x1 - x0), x1 + 0.04 * (x1 - x0))
-    fig.suptitle(f"LM1B-{cv['size']}: iterating the V-cycle (seed {cv['seed']}, {N} samples)", color=ink, fontsize=10.5,
-                 x=0.01, ha="left")
-    fig.tight_layout()
-    out_png = os.path.join(RESULTS, f"lm1b_{cv['size']}_converge.png")
-    fig.savefig(out_png, facecolor=surf)
-    plt.close(fig)
-    print("chart:", out_png)
 
 # ---- LM1B residual-gated V-cycle (from the diagnostic caches, no new sampling) ----------------------
 # The gate cycles only the samples whose level-local residual (summed over levels, as in Sudoku Phase 2) is in
@@ -730,6 +506,115 @@ if jfiles:
                      f"{100 * j['order_agreement']:.0f}% | {j['judge'].split('/')[-1]} |")
         summary[os.path.basename(p_)[:-5]] = j
     lines.append("")
+
+# ---- Sudoku: soft decisions, singles propagation and symmetry-twisted V-cycles (sudoku_stack.py) ----------
+SUDOKU_LEVELS = [1, 2, 4, 6, 9, 13, 18, 26, 37, 50, 67, 89]  # positions per level, all released Sudoku tokenizers
+STACK_NAMES = {"N": "Best-of-N (fresh restarts, T = 1)", "F": "Fresh greedy restarts in random symmetry frames",
+               "E": "V-cycle retries from level 5 (T = 1)", "A": "Symmetry-twisted V-cycle (level 5, T = 0)",
+               "B": "Soft-decision first pass + twisted V-cycle", "D": "Soft decisions throughout + twisted V-cycle"}
+for path in sorted(glob.glob(os.path.join(RESULTS, "sudoku_stack_*.json"))):
+    sj = json.load(open(path))
+    tag = os.path.basename(path)[len("sudoku_stack_"):-5]
+    budgets = [b for b in ("12", "13", "14", "15", "16", "18", "20") if b in next(iter(sj["arms"].values()))["all"]]
+    lines += [f"## Sudoku ({sj['diff']}): checker-gated retries, {'with' if sj.get('singles', True) else 'without'} singles propagation "
+              f"({sj['n']} boards, seeds {sj['seeds']}, {sj.get('gpu') or ('NVIDIA A10G, replication' if 'a10g' in tag else sj['device'])})", "",
+              f"Greedy first pass {pct(sj['greedy_first_pass'], 2)}%. Soft-decision first pass at Ts = {sj['ts_star']:g} (chosen on "
+              f"boards 0–{sj['n'] // 2 - 1}): {pct(sj['soft'][str(sj['ts_star'])]['all'], 2)}% "
+              f"(held-out half {pct(sj['soft'][str(sj['ts_star'])]['held'], 2)}%). Singles propagation alone completes "
+              f"{pct(sj['singles_complete'], 2)}% of boards. Accuracy (%) at a mean NFE budget per board; "
+              "\u2013 where the arm's retries ran out before the budget.", "",
+              "| Method | " + " | ".join(f"{b} NFE" for b in budgets) + " | Final (mean NFE) | Duplicate retries |",
+              "|---|" + "---|" * (len(budgets) + 2)]
+    for k, name in STACK_NAMES.items():
+        if k not in sj["arms"]:
+            continue
+        a = sj["arms"][k]["all"]
+        cells = ["\u2013" if a[b] != a[b] else f"{a[b]:.1f}" for b in budgets]
+        fin = sj["final"][k] if "final" in sj else None
+        lines.append(f"| {name} | " + " | ".join(cells) + " | " +
+                     (f"{fin['solved']:.1f} ({fin['mean_nfe']:.1f}) | " if fin else "\u2013 | ") + f"{100 * sj['dup'][k]:.0f}% |")
+    lines += ["", "Paired differences (percentage points, mean [95% CI], bootstrap over boards, seeds averaged):", "",
+              "| Comparison | Boards | Difference |", "|---|---|---|"]
+    for key, r in sj["paired"].items():
+        label, split = key.split("|")
+        if r["diff"] != r["diff"] or (r["diff"] == 0 and r["lo"] == 0 and r["hi"] == 0):
+            continue
+        lines.append(f"| {label} | {'all' if split == 'all' else 'held-out half'} | "
+                     f"{r['diff']:+.2f} [{r['lo']:+.2f}, {r['hi']:+.2f}] |")
+    # Extra paired comparisons from the per-board file: equal NFE and equal FLOPs (token positions processed).
+    pb_path = os.path.join(RESULTS, "cache", f"sudoku_stack_{tag}_perboard.pt")
+    if os.path.exists(pb_path) and "acc_round" in next(iter(torch.load(pb_path, weights_only=False)["runs"].values()))[0]:
+        runs_ = torch.load(pb_path, weights_only=False)["runs"]
+        R_, K_, full_ = sj["rounds"], 12, sj["flop_full_positions"]
+        prompt_ = full_ - sum(SUDOKU_LEVELS)
+
+        def cost_(run, kind):
+            a = np.where(run["acc_round"] >= 0, run["acc_round"], R_).astype(np.int64)
+            n_ = np.minimum(np.arange(R_ + 1)[:, None], a[None, :])
+            if kind == "nfe":
+                return K_ + (K_ - run["m"]) * n_
+            per = ((prompt_ if run["frames"] == "twisted" else 0) + sum(SUDOKU_LEVELS[run["m"]:])) / full_
+            return 1.0 + per * n_
+
+        def acc_(arm, idx, budget, kind):
+            vals = []
+            for run in runs_[arm]:
+                c, sr = cost_(run, kind)[:, idx], run["solved_round"][idx]
+                ys = np.array([((sr >= 0) & (sr <= r)).mean() for r in range(R_ + 1)])
+                vals.append(np.interp(budget, c.mean(1), ys, right=ys[-1] if run["unaccepted_end"] == 0 else np.nan))
+            return float(np.nanmean(vals))
+
+        n_b = len(runs_["A"][0]["solved_round"])
+        boot_ = section_rng(f"stack_{tag}").integers(0, n_b, size=(400, n_b))
+        lines += ["", "Further paired differences (percentage points, mean [95% CI]; FLOPs counted as token positions "
+                  "processed, one full pass = 1, a retry in a new frame recomputes the prompt):", "",
+                  "| Comparison | Budget | Difference |", "|---|---|---|"]
+        extra = {}
+        for a_, b_ in (("D", "F"), ("A", "F"), ("D", "E"), ("F", "N"), ("E", "N")):
+            if a_ not in runs_ or b_ not in runs_:
+                continue
+            for kind, budget in (("nfe", 13), ("nfe", 14), ("flop", 1.1), ("flop", 1.2), ("flop", 1.4)):
+                d0 = acc_(a_, np.arange(n_b), budget, kind) - acc_(b_, np.arange(n_b), budget, kind)
+                ds = np.array([acc_(a_, ix, budget, kind) - acc_(b_, ix, budget, kind) for ix in boot_])
+                ds = ds[~np.isnan(ds)]
+                if np.isnan(d0) or len(ds) < 200 or (d0 == 0 and np.all(ds == 0)):
+                    continue
+                lo, hi = np.percentile(ds, 2.5), np.percentile(ds, 97.5)
+                unit = "NFE" if kind == "nfe" else "full-pass FLOPs"
+                lines.append(f"| {a_} − {b_} | {budget:g} {unit} | {100 * d0:+.2f} [{100 * lo:+.2f}, {100 * hi:+.2f}] |")
+                extra[f"{a_}-{b_}@{budget}{kind}"] = [100 * d0, 100 * lo, 100 * hi]
+        sj["paired_extra"] = extra
+    lines.append("")
+    summary[f"sudoku_stack_{tag}"] = sj
+
+# ---- Error diffusion within a level (ed_sweep.py): a negative result --------------------------------------------
+ed1, ed2 = load("ed_stage1.json"), load("ed_stage2.json")
+if ed1:
+    lines += [f"## Error diffusion within a level (Floyd–Steinberg), stage 1 ({len(ed1['seeds'])} seeds × {ed1['n']} samples)", "",
+              "Each arm samples every level with error diffusion of strength γ and carry ρ (γ = 0 is NCM). Ratio: corpus "
+              "gen. PPL against the reference sampler with the same seeds, paired bootstrap over samples; *frontier*: "
+              "ratio against NCM's own temperature curve at the same corpus distinct-2.", "",
+              "| Task | Arm | Gen. PPL | Ratio [95% CI] | Corpus distinct-2 change | Frontier ratio |", "|---|---|---|---|---|---|"]
+    for task_, tj in ed1["tasks"].items():
+        lines.append(f"| {task_} | reference (NCM) | {tj['reference']['gen_ppl']:.2f} | – | – | – |")
+        for arm, r in tj["arms"].items():
+            fr = f"{r['frontier_ratio']:.3f}" if "frontier_ratio" in r else "–"
+            lines.append(f"| {task_} | {arm} | {r['gen_ppl']:.2f} | {r['ppl_ratio']:.3f} [{r['ci'][0]:.3f}, {r['ci'][1]:.3f}] | "
+                         f"{100 * r['corpus_d2_change']:+.1f}% | {fr} |")
+    lines.append("")
+    summary["error_diffusion_stage1"] = ed1
+if ed2:
+    lines += [f"Stage 2 (LM1B-medium, γ = {ed2['gamma']:g}, ρ = {ed2['rho']:g}, m = {ed2['m']}, {len(ed2['seeds'])} seeds × "
+              f"{ed2['n']}): ratios against the reference sampler.", "",
+              "| Arm | Gen. PPL | Ratio [95% CI] |", "|---|---|---|"]
+    for arm, r in ed2["vs_reference"].items():
+        lines.append(f"| {arm} | {r['gen_ppl']:.2f} | {r['ppl_ratio']:.3f} [{r['ci'][0]:.3f}, {r['ci'][1]:.3f}] |")
+    lines += ["", "Against the plain V-cycle (does error diffusion add to it?):", "", "| Arm | Ratio vs V-cycle [95% CI] |",
+              "|---|---|"]
+    for arm, r in ed2.get("vs_vcycle", {}).items():
+        lines.append(f"| {arm} | {r['ppl_ratio']:.3f} [{r['ci'][0]:.3f}, {r['ci'][1]:.3f}] |")
+    lines.append("")
+    summary["error_diffusion_stage2"] = ed2
 
 with open(os.path.join(RESULTS, "SUMMARY.md"), "w", encoding="utf-8") as f:
     f.write("# Results summary (generated by experiments/analyze.py)\n\n" + "\n".join(lines) + "\n")

@@ -44,27 +44,28 @@ class LM1B:
     def prompt(self, B):
         return torch.full((B, 1), self.eos, device=self.dev)
 
-    def generate(self, n, seed, temperature=None):
-        """n unconditional samples: (codes per level, picked token ids)."""
+    def generate(self, n, seed, temperature=None, ed=None):
+        """n unconditional samples: (codes per level, picked token ids). ed: (gamma, rho) for error diffusion."""
         dec = self.dec
         temperature = self.temp if temperature is None else temperature
         torch.manual_seed(seed)
         codes, ids = [], []
         for sl in batches(n, self.bs):
             B = sl.stop - sl.start
-            c, z = dec.run(dec.prefix(self.prompt(B)), start=1, codes=[self.sample_l0(B)], temperature=temperature)
+            c, z = dec.run(dec.prefix(self.prompt(B)), start=1, codes=[self.sample_l0(B)], temperature=temperature,
+                           ed=ed)
             codes.append([ck.cpu() for ck in c])
             ids.append(self.pick_tokens(self.ncm.vqvae.decoder(z)).cpu())
         return [torch.cat([c[k] for c in codes]) for k in range(dec.K)], torch.cat(ids)
 
-    def restart(self, codes, ids, m, reencode=True):
+    def restart(self, codes, ids, m, reencode=True, ed=None):
         """One cycle: keep encode(ids)_{<m} (or the generated r_{<m}) and resample levels m..K-1."""
         dec, out_c, out_i = self.dec, [], []
         for sl in batches(len(ids), self.bs):
             B = sl.stop - sl.start
             c = [ck[sl].to(self.dev) for ck in codes]
             base = dec.encode(ids[sl].to(self.dev)) if reencode else c
-            c2, z = dec.run(dec.prefix(self.prompt(B)), start=m, codes=base, temperature=self.temp)
+            c2, z = dec.run(dec.prefix(self.prompt(B)), start=m, codes=base, temperature=self.temp, ed=ed)
             out_c.append([ck.cpu() for ck in c2])
             out_i.append(self.pick_tokens(self.ncm.vqvae.decoder(z)).cpu())
         return [torch.cat([c[k] for c in out_c]) for k in range(dec.K)], torch.cat(out_i)

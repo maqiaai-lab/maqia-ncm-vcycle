@@ -1,0 +1,10 @@
+[16:05:21] setup start
+torch 2.11.0+cu128 NVIDIA A10G
+[16:07:30] setup done
+[16:07:30] start hard
+[16:10:32] ok hard
+[16:10:32] start medium
+[16:12:41] ok medium
+[16:12:41] start easy
+[16:14:28] ok easy
+[16:14:28] all done
