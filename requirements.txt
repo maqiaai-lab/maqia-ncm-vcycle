@@ -5,3 +5,6 @@ hydra-core
 transformers>=4.51
 huggingface_hub[cli]
 matplotlib
+sacrebleu
+rouge-score
+mauve-text

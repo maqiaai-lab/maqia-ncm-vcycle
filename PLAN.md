@@ -4,7 +4,6 @@
 
 **Target paper:** *Next-Concept Modeling: Fast, Parallel Coarse-to-Fine Text Generation* (Kumbong, Khare et al., arXiv:2610.14162, Oct 2026)
 **Code:** https://github.com/HazyResearch/ncm (code, checkpoints and datasets are public)
-**Contacts (later):** kumboh@stanford.edu, iskhare@stanford.edu
 
 ---
 

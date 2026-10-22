@@ -72,12 +72,11 @@ coarse codes (Section 3.7 of the README), or soft code decisions in a multiscale
 
 - **Not new:** re-encoding with the frozen multiscale encoder, keeping the coarse levels and regenerating the fine
   ones (DiverseVAR's scale-travel does this once, in latent space, for images); randomizing the symmetry frame of a
-  neural Sudoku solver (Lattice Deduction Transformers, POMO); posterior-mean inputs (Mixture of Inputs).
-- **New to our knowledge:**
-  - restriction through the discrete output and the full encoder, applied to text and evaluated against an
-    equal-compute control that isolates the re-encoding step;
-  - the round-trip residual as a training-free error detector (AUROC 0.92 on hard Sudoku, against 0.87 for decoder
-    confidence);
-  - iterated V-cycles and the contraction of the coarse residual;
-  - restriction in a transformed frame (the symmetry-twisted V-cycle) and soft code decisions in a multiscale
-    discrete generator.
+  neural Sudoku solver (Lattice Deduction Transformers, POMO); posterior-mean inputs (Mixture of Inputs); round-trip
+  consistency as a measurement (Section 3).
+- **New to our knowledge:** restriction through the discrete output and the full encoder, applied to text and
+  evaluated against an equal-compute control that isolates the re-encoding step.
+- **Not claimed as new:** the remaining components apply known ideas to NCM, and our scans are not thorough enough to
+  claim them: the round-trip residual as a training-free error detector (AUROC 0.92 on hard Sudoku, against 0.87 for
+  decoder confidence); iterated V-cycles and the contraction of the coarse residual; restriction in a transformed
+  frame (the symmetry-twisted V-cycle); soft code decisions in a multiscale discrete generator.

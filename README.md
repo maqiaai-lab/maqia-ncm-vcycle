@@ -46,6 +46,7 @@ and TinyStories. The control regenerates the same levels from the generated (not
 7. [Reproduction](#7-reproduction)
 8. [Repository layout](#8-repository-layout)
 9. [References](#9-references)
+10. [License](#10-license)
 
 ## 1. Method
 
@@ -325,10 +326,11 @@ and in the off-manifold coarse codes, which only re-encoding followed by regener
 The closest precedent for restrict-then-regenerate is the "scale-travel" step of DiverseVAR (Park *et al.*, 2025),
 which re-quantizes an accumulated image latent once, at a fixed scale. Random symmetry frames for neural Sudoku solvers
 appear in Lattice Deduction Transformers (2026) and as instance augmentation in POMO (Kwon *et al.*, 2020);
-posterior-mean inputs appear in Mixture of Inputs (Zhuang *et al.*, 2025). New here, to our knowledge, are restriction
-through the discrete output and the full encoder on text with an equal-compute control, the round-trip residual as an
-error detector, iterated cycles with a contracting residual, restriction in a transformed frame, and soft code
-decisions in a multiscale discrete generator. A detailed comparison is in [`docs/prior_art.md`](docs/prior_art.md).
+posterior-mean inputs appear in Mixture of Inputs (Zhuang *et al.*, 2025). New here, to our knowledge, is restriction
+through the discrete output and the full encoder, applied to text and measured against an equal-compute control that
+isolates the re-encoding step. The other components (the round-trip residual as an error detector, iterated cycles,
+the symmetry twist and soft code decisions) apply known ideas to NCM and are not claimed as new. A detailed comparison
+is in [`docs/prior_art.md`](docs/prior_art.md).
 
 ## 6. Limitations
 
@@ -409,3 +411,8 @@ python experiments/figures.py                # figures: figures/*.png and figure
 - Thao, N. T., & Vetterli, M. (1994). Deterministic analysis of oversampled A/D conversion and decoding improvement based on consistent estimates. *IEEE Transactions on Signal Processing*, 42(3), 519–531.
 - Tian, K., *et al.* (2024). Visual autoregressive modeling: Scalable image generation via next-scale prediction. [arXiv:2404.02905](https://arxiv.org/abs/2404.02905).
 - Zhuang, Y., *et al.* (2025). Mixture of Inputs. [arXiv:2505.14827](https://arxiv.org/abs/2505.14827).
+
+## 10. License
+
+The code in this repository is released under the [MIT License](LICENSE). The NCM code, checkpoints and datasets
+that `setup.sh` and `hf download` fetch are not part of this repository and keep their own licenses.
