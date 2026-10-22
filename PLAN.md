@@ -151,7 +151,7 @@ def v_cycle_decode(model, tok, prompt, n_cycles=2, project=None, pick_level=None
 | Cycles oscillate instead of converging | Damp: resample only V2-masked positions; lower the temperature on later cycles |
 | Can't start generation mid-hierarchy in the repo | Write a wrapper that injects `ẑ^(j-1)` and codes for levels < j |
 
-## 11. Prior-art check (do before outreach)
+## 11. Prior-art check
 
 Search Google Scholar, arXiv and Semantic Scholar for:
 - [x] "multigrid" + "discrete diffusion" / "next-scale prediction" / "VAR"
@@ -172,17 +172,8 @@ Record anything close here and state clearly how this differs.
 | Days 3–7 | V-cycle variants V1–V4 on Sudoku |
 | Week 2 | Compute-matched controls, LM1B, ablations |
 | Week 3 | Prior-art check, short write-up, one key chart, GitHub repo |
-| Then | Email the authors (result in the body, links to the repo) |
 
-## 13. Outreach checklist
-
-- [x] Charts: `figures/fig1_restriction_effect.png` (text) and `figures/fig6_sudoku_retries.png` (Sudoku); all figures are drawn by `experiments/figures.py`.
-- [ ] Two or three key numbers written in the email body.
-- [ ] A public GitHub repo with code and results (full URL, no shorteners, no zips).
-- [ ] A specific subject line, e.g., *"NCM: multigrid V-cycle decoding improves Sudoku accuracy (short result)"*.
-- [ ] A clear ask (feedback / call / collaboration) and what you want (credit, co-authorship, just sharing).
-
-## 14. Notes and log
+## 13. Notes and log
 
 _Use this section as a lab notebook: dates, commands, results, surprises._
 
@@ -403,7 +394,7 @@ All numbers are in `results/SUMMARY.md` and the README.
 **Quality on 20 seeds.**
 - Qwen2.5-1.5B ratio vs no restriction: 0.724 [0.717, 0.730] at m = 6 and 0.837 [0.832, 0.843] at m = 8.
 - Human text: 53.5 (GPT-2) and 40.8 (Qwen).
-- One V-cycle closes **51%** of the log-perplexity gap between NCM and human text: (ln 88.8 − ln 68.6) / (ln 88.8 − ln 53.5). **Correction:** a status digest to the user said 57%, which is the same ratio on the linear perplexity scale; the log scale is the right one.
+- One V-cycle closes **51%** of the log-perplexity gap between NCM and human text: (ln 88.8 − ln 68.6) / (ln 88.8 − ln 53.5). **Correction:** an earlier summary said 57%, which is the same ratio on the linear perplexity scale; the log scale is the right one.
 
 **LLM judge** (Qwen2.5-7B-Instruct, both orders, mean of P(A) / (P(A) + P(B)) over the orders):
 

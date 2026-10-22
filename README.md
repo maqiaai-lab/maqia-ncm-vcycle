@@ -27,9 +27,10 @@ The main findings are:
 4. **Sudoku.** Retrying rejected boards in a random symmetry frame of the puzzle and feeding posterior-mean code
    embeddings raises hard-Sudoku accuracy from 86.2% (single pass) to 96.5% at a mean of 14 NFE with NCM alone,
    and to 97.9% with rule-based singles propagation; V-cycle retries in a fixed frame reach 90.2% and 94.8%.
-5. **Limits.** On WMT14 and XSum the V-cycle yields a small, significant improvement (+0.55 BLEU, +0.25 ROUGE-2) that
-   is smaller than classifier-free guidance at equal compute. Zero-compute alternatives on text, including error
-   diffusion within a level, gave no measurable gain (Section 4).
+5. **Limits.** On WMT14 and XSum the V-cycle yields a small, significant improvement (+0.55 BLEU, +0.25 ROUGE-2). On
+   WMT14 it is smaller than the paper's classifier-free guidance, which also costs less (+1.3 BLEU for +11 NFE, against
+   +0.56 for +24 NFE; lowercased). Zero-compute alternatives on text, including error diffusion within a level, gave no
+   measurable gain (Section 4).
 
 ![Figure 1](figures/fig1_restriction_effect.png)
 
@@ -406,7 +407,7 @@ python experiments/figures.py                # figures: figures/*.png and figure
 | `experiments/box/` | scripts for a rented GPU: setup, a resumable queue with a hard shutdown, push and pull |
 | `results/` | raw results (`*.json`), per-sample caches, logs and the generated `SUMMARY.md` |
 | `figures/` | the figures in PNG (300 dpi) and PDF |
-| `PLAN.md` | the research plan and the dated laboratory notebook (§14) |
+| `PLAN.md` | the research plan and the dated laboratory notebook (§13) |
 | `docs/` | prior art |
 
 ## 9. References
