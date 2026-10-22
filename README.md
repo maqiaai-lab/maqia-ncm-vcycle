@@ -19,8 +19,9 @@ The main findings are:
    the same levels without re-encoding (Fig. 1). A scorer from another model family, MAUVE at 5,120 samples and an
    LLM judge agree.
 2. **Mechanism.** 86–100% of the generator's coarse codes differ from the codes the encoder assigns to the text they
-   decode to. Regenerating the fine levels from these re-encoded, on-manifold codes acts as a training-free correction
-   of exposure bias.
+   decode to, and the equal-compute control shows that replacing them with the re-encoded codes carries the effect.
+   This is consistent with a training-free correction of exposure bias but does not prove it: how much a sample's
+   coarse codes change predicts its gain only weakly (Spearman ρ ≤ 0.04 on LM1B, 0.18 on TinyStories; Section 3.4).
 3. **Error detection.** The amount of round-trip disagreement detects wrong Sudoku boards with an AUROC of 0.92
    (decoder confidence: 0.87), without access to the solution.
 4. **Sudoku.** Retrying rejected boards in a random symmetry frame of the puzzle and feeding posterior-mean code
@@ -196,6 +197,13 @@ levels, which contracts every cycle, as in a convergent multigrid iteration.
 - **Gating does not pay on text.** Cycling only the samples with the largest level-local residual beats a random
   choice by 1.5–2% at equal compute on LM1B-small and TinyStories and not significantly on LM1B-medium; the V-cycle
   improves nearly every sample.
+- **The gain barely grows with the residual.** If the gain came from replacing off-manifold coarse codes, samples whose
+  kept levels change more on the round trip should gain more over the control. On LM1B they hardly do: Spearman
+  ρ = +0.04 [+0.01, +0.06] on LM1B-medium (5,120 samples), +0.03 on large and about zero on small (both intervals
+  include zero). TinyStories shows a weak trend (ρ = +0.18 [+0.10, +0.25]; ratio 0.86 in the lowest residual quintile,
+  0.76 in the highest). Every sample is far off the manifold (10th–90th percentile of the round-trip disagreement:
+  0.69–0.97 across models), so this may be saturation. An intervention that re-encodes only part of the coarse codes
+  would separate the two; it was not run.
 
 ### 3.5 Prompted tasks
 
@@ -318,8 +326,8 @@ included.
 | Neighbourhood search and keep-best acceptance over restart levels (Sudoku) | as V-cycle | 0.0 ± 0.3 points at 13–16 NFE | No gain |
 | Limited discrepancy search on decoder margins (Sudoku) | 0 NFE | +0.65 points (single-cell repairs only) | Small; classical |
 
-The common cause on text is that NCM's remaining error lies in the per-position code distributions at the fine levels
-and in the off-manifold coarse codes, which only re-encoding followed by regeneration corrects.
+Our reading of the common cause on text is that NCM's remaining error lies in the per-position code distributions at
+the fine levels and in the off-manifold coarse codes, which only re-encoding followed by regeneration corrects.
 
 ## 5. Related work
 
@@ -336,6 +344,9 @@ is in [`docs/prior_art.md`](docs/prior_art.md).
 
 - **Diversity.** One cycle lowers corpus distinct-2 by 4–6% (13% after six cycles from level 6). This is less than
   colder sampling costs, but it moves away from human text, which is more varied than NCM's samples to begin with.
+- **Mechanism.** The equal-compute control shows *that* re-encoding helps, not *why*. Exposure bias is the explanation
+  we favour, but the per-sample dose-response is weak (Section 3.4) and no intervention on the amount of re-encoding
+  was run.
 - **Evaluation.** There is no human evaluation; quality evidence rests on two perplexity scorers, MAUVE and one 7B LLM
   judge with a strong position bias.
 - **Coverage.** Two unconditional datasets (LM1B at three sizes, TinyStories) and two prompted tasks. OpenWebText has

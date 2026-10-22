@@ -400,6 +400,58 @@ for path in sorted(glob.glob(os.path.join(RESULTS, "cache", "lm1b_sweep_*_s*.pt"
         lines.append(f"| {m_} | " + " | ".join(cells) + " |")
     lines.append("")
 
+# ---- Text: does the V-cycle's gain grow with the coarse residual? (diagnostic caches, no new sampling) -----
+# If the gain comes from replacing off-manifold coarse codes, samples whose kept levels change more on the round trip
+# should gain more. Dose: round-trip disagreement on levels < m (mean over levels). Gain: log-PPL of the
+# no-restriction control minus that of the V-cycle, per sample. Partial rho removes the draft's own log-PPL.
+def ranks(x):
+    _, inv, cnt = np.unique(x, return_inverse=True, return_counts=True)
+    return (np.cumsum(cnt) - (cnt + 1) / 2)[inv]  # average ranks for ties
+
+
+def rho(a, b):
+    a, b = a - a.mean(), b - b.mean()
+    return float((a * b).sum() / np.sqrt((a * a).sum() * (b * b).sum()))
+
+
+def partial_out(y, z):
+    A = np.c_[np.ones_like(z), z]
+    return y - A @ np.linalg.lstsq(A, y, rcond=None)[0]
+
+
+m_dose, dose_rows, dose_summary = 6, [], {}
+for size, runs in lm.items():
+    caches = [c for _, c in runs if c is not None and "rt" in c]
+    if not caches or not all(f"no-restrict|m={m_dose}" in c["per_sample_nll"] for c in caches):
+        continue
+    lp = lambda k: np.concatenate([np.asarray(c["per_sample_nll"][k][0], float) / np.maximum(np.asarray(c["per_sample_nll"][k][1], float), 1)
+                                   for c in caches])
+    cat = lambda k, j: np.concatenate([np.asarray(c["per_sample_nll"][k][j], float) for c in caches])
+    x = np.concatenate([c["rt"][:, :m_dose].mean(1).numpy().astype(float) for c in caches])
+    gain, draft = lp(f"no-restrict|m={m_dose}") - lp(f"vcycle|m={m_dose}"), lp("baseline")
+    rx, rg, rd = ranks(x), ranks(gain), ranks(draft)
+    r, r_part = rho(rx, rg), rho(partial_out(rx, rd), partial_out(rg, rd))
+    idx = section_rng(f"dose_{size}").integers(0, len(x), size=(N_BOOT, len(x)))
+    b = [rho(ranks(x[i]), ranks(gain[i])) for i in idx]
+    ci = [float(np.percentile(b, 2.5)), float(np.percentile(b, 97.5))]
+    nv, tv, nn = cat(f"vcycle|m={m_dose}", 0), cat(f"vcycle|m={m_dose}", 1), cat(f"no-restrict|m={m_dose}", 0)
+    qb = np.clip(np.searchsorted(np.quantile(x, [0.2, 0.4, 0.6, 0.8]), x, side="right"), 0, 4)
+    quint = [float(np.exp((nv[qb == k].sum() - nn[qb == k].sum()) / tv[qb == k].sum())) for k in range(5)]
+    lo, hi = np.percentile(x, [10, 90])
+    dose_rows.append(f"| {TEXT_NAME(size)} | {len(x)} | {lo:.2f}–{hi:.2f} | {r:+.3f} [{ci[0]:+.3f}, {ci[1]:+.3f}] | {r_part:+.3f} | "
+                     + " / ".join(f"{q_:.3f}" for q_ in quint) + " |")
+    dose_summary[size] = {"n": len(x), "residual_p10_p90": [float(lo), float(hi)], "rho": r, "ci": ci,
+                          "rho_partial_draft": r_part, "ratio_by_quintile": quint}
+if dose_rows:
+    lines += [f"## Text: V-cycle gain against the coarse residual (m = {m_dose}; pooled seeds, no new sampling)", "",
+              f"Per sample: residual = round-trip disagreement on the kept levels 0–{m_dose - 1} (mean over levels); gain = "
+              "log-PPL of the no-restriction control minus that of the V-cycle. Spearman rho with a 95% bootstrap CI over "
+              "samples; partial rho given the draft's own log-PPL; corpus gen. PPL ratio V-cycle / control within each "
+              "residual quintile, lowest to highest.", "",
+              "| Model | Samples | Residual, 10th–90th pct. | Spearman rho [95% CI] | Partial rho given draft | V-cycle / control by residual quintile |",
+              "|---|---|---|---|---|---|"] + dose_rows + [""]
+    summary["text_dose_response"] = dose_summary
+
 # ---- LM1B quality beyond GPT-2 perplexity (lm1b_quality.py, lm1b_mauve.py) --------------------------
 for path in sorted(glob.glob(os.path.join(RESULTS, "lm1b_quality_*.json"))):
     qj = json.load(open(path))

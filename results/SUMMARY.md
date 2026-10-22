@@ -459,6 +459,17 @@ Gating vs a finer restart level (LM1B-small, seed 42): gen. PPL (extra NFE per s
 | 8 | 92.3 (+0.8) | 90.8 (+1.3) | 88.7 (+2.0) | 86.5 (+2.7) | 82.8 (+4.0) |
 | 10 | 93.3 (+0.4) | 92.4 (+0.7) | 90.9 (+1.0) | 90.3 (+1.3) | 88.2 (+2.0) |
 
+## Text: V-cycle gain against the coarse residual (m = 6; pooled seeds, no new sampling)
+
+Per sample: residual = round-trip disagreement on the kept levels 0–5 (mean over levels); gain = log-PPL of the no-restriction control minus that of the V-cycle. Spearman rho with a 95% bootstrap CI over samples; partial rho given the draft's own log-PPL; corpus gen. PPL ratio V-cycle / control within each residual quintile, lowest to highest.
+
+| Model | Samples | Residual, 10th–90th pct. | Spearman rho [95% CI] | Partial rho given draft | V-cycle / control by residual quintile |
+|---|---|---|---|---|---|
+| LM1B-large | 768 | 0.73–0.94 | +0.032 [-0.042, +0.101] | +0.058 | 0.798 / 0.812 / 0.816 / 0.810 / 0.770 |
+| LM1B-medium | 5120 | 0.75–0.95 | +0.036 [+0.009, +0.065] | +0.048 | 0.772 / 0.785 / 0.802 / 0.769 / 0.753 |
+| LM1B-small | 768 | 0.80–0.97 | -0.005 [-0.078, +0.064] | +0.009 | 0.844 / 0.871 / 0.848 / 0.880 / 0.843 |
+| TinyStories | 768 | 0.69–0.83 | +0.176 [+0.099, +0.248] | +0.151 | 0.856 / 0.830 / 0.808 / 0.798 / 0.756 |
+
 ## LM1B-medium: quality beyond GPT-2 perplexity (seeds [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 42], pooled 5120 samples)
 
 *Human*: held-out LM1B validation chunks (128 BERT ids, like the samples), scored the same way. Qwen2.5-1.5B: gen. PPL of the text without special tokens, up to 256 tokens. MAUVE: against the same number of human chunks, GPT-2-large features, full sets. Uncertainty from 20 rounds of paired half-size subsamples (without replacement; fresh k-means seed): the last column gives the full-set difference, then the half-size mean difference with its 2.5–97.5 percentiles and the share of rounds the V-cycle is ahead. Half-size MAUVE is not on the full-size scale; only differences compare.

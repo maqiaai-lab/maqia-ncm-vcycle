@@ -468,3 +468,15 @@ with singles propagation:
 `experiments/figures.py` with one style (`vcycle/plotstyle.py`, PNG at 300 dpi and PDF); `experiments/analyze.py` now
 writes tables only, including the Sudoku stacking and error-diffusion sections. The old charts under `results/*.png`
 were removed.
+
+### 2026-10-22 (outside review; mechanism dose-response from the caches)
+
+An outside review called the exposure-bias explanation asserted, not tested. Its simplest prediction can be checked
+without sampling: samples whose kept coarse levels change more on the round trip should gain more over the
+equal-compute control. `analyze.py` now writes this section (m = 6, pooled seeds). Spearman ρ between the round-trip
+residual on levels 0–5 and the per-sample log-PPL gain: LM1B-medium +0.036 [+0.009, +0.065] (5,120 samples),
+LM1B-large +0.032, LM1B-small −0.005 (both intervals include zero), TinyStories +0.176 [+0.099, +0.248]. The PPL
+ratio is flat across residual quintiles on LM1B (0.75–0.80 on medium) and falls from 0.86 to 0.76 on TinyStories.
+The residual spans only 0.69–0.97 (10th–90th percentile), so saturation cannot be ruled out. The README now calls
+exposure bias an explanation consistent with the data, not a demonstrated cause. Next, if wanted: re-encode a random
+fraction of the coarse positions (0–100%) and check whether the gain grows with it.
